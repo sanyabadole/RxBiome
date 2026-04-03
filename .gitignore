@@ -1,5 +1,50 @@
+# Nextflow runtime
+work/
+.nextflow/
+.nextflow.log*
+.nextflow.log
+
+# Pipeline outputs — never commit results
+results/
+results_test/
+output/
+
+# Test data outputs
+tests/data/*.bam
+tests/data/*.sam
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Conda
 .conda/
 *.conda
-envs/
-__pycache__/
-.pytest_cache/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Dashboard build artifacts
+dashboard/node_modules/
+dashboard/build/
+dashboard/dist/
+
+# Database files — too large for git
+databases/*.bt2
+databases/*.bt2l
+databases/*.tar.gz
+databases/*.db
+databases/*.h5
+databases/*.pkl
+
+# Secrets
+.env
+.env.local
+EOF
