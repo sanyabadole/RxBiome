@@ -6,9 +6,10 @@ channels:
 dependencies:
   - python=3.11
   - openjdk=21
+  - nextflow>=25.04.0
   - pip
   - pip:
-    - nf-core>=2.13
+    - nf-core>=3.5.0
     - pydantic>=2.0
     - requests>=2.31
     - pandas>=2.0
