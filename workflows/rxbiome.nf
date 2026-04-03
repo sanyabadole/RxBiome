@@ -19,6 +19,11 @@ workflow RXBIOME {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
+
+    // RxBiome-specific input channels
+    // ch_drugs will be added when Module 3 is wired in
+    // sequencing_type determines WGS vs 16S evidence_mode
+    
     main:
 
     ch_versions = channel.empty()
