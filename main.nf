@@ -1,11 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    nf-core/rxbiome
+    rxbiome
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/nf-core/rxbiome
-    Website: https://nf-co.re/rxbiome
-    Slack  : https://nfcore.slack.com/channels/rxbiome
+    Github : https://github.com/rxbiome
 ----------------------------------------------------------------------------------------
 */
 
@@ -26,9 +24,7 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_rxbi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// TODO nf-core: Remove this line if you don't need a FASTA file
-//   This is an example of how to use getGenomeAttribute() to fetch parameters
-//   from igenomes.config using `--genome`
+
 params.fasta = getGenomeAttribute('fasta')
 
 /*
@@ -72,7 +68,7 @@ workflow {
         params.version,
         params.validate_params,
         params.monochrome_logs,
-        args,
+        [], // no positional args because we're using the local config nnd its causing errors when running locally
         params.outdir,
         params.input,
         params.help,

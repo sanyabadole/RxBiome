@@ -8,6 +8,7 @@ include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_rxbiome_pipeline'
+include { QC_PREPROCESSING       } from '../subworkflows/local/qc_preprocessing'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -20,14 +21,24 @@ workflow RXBIOME {
     take:
     ch_samplesheet // channel: samplesheet read in from --input
 
-    // RxBiome-specific input channels
-    // ch_drugs will be added when Module 3 is wired in
-    // sequencing_type determines WGS vs 16S evidence_mode
     
     main:
 
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
+
+    //
+    // SUBWORKFLOW: Module 1 — QC & Preprocessing
+    //
+    QC_PREPROCESSING (
+        ch_samplesheet,
+        params.host_db ? file(params.host_db) : []
+    )
+    ch_versions      = ch_versions.mix(QC_PREPROCESSING.out.versions)
+    ch_multiqc_files = ch_multiqc_files.mix(QC_PREPROCESSING.out.multiqc_files)
+
+    // yet to do modules 2
+
 
     //
     // Collate and save software versions
