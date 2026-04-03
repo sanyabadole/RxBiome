@@ -23,15 +23,15 @@ workflow QC_PREPROCESSING {
     // MODULE: FASTP — trim adapters and low quality bases
     //
     FASTP (
-        ch_reads,
-        [],     // no adapter fasta — use auto-detection (--detect_adapter_for_pe)
-        false,  // discard_trimmed_pass = false (keep passing reads)
-        false,  // save_trimmed_fail = false
-        false   // save_merged = false
+        ch_reads.map { meta, reads -> [ meta, reads, [] ] },  
+        false,  // discard_trimmed_pass
+        false,  // save_trimmed_fail
+        false   // save_merged
     )
-    ch_versions      = ch_versions.mix(FASTP.out.versions_fastp)
-    ch_multiqc_files = ch_multiqc_files.mix(FASTP.out.json)
-    ch_multiqc_files = ch_multiqc_files.mix(FASTP.out.html)
+    // FASTP emits version tuples to topic:versions; do not mix tuple versions into ch_versions,
+    // because softwareVersionsToYAML expects YAML-file-style inputs!!! - ask aboout tthis error later, only fix found
+    ch_multiqc_files = ch_multiqc_files.mix(FASTP.out.json.map { meta, f -> f })
+    ch_multiqc_files = ch_multiqc_files.mix(FASTP.out.html.map { meta, f -> f })
 
     //
     // MODULE: KNEADDATA — remove host (human) reads 
@@ -40,8 +40,8 @@ workflow QC_PREPROCESSING {
         FASTP.out.reads,  // takes trimmed reads directly from FASTP
         ch_host_db
     )
-    ch_versions      = ch_versions.mix(KNEADDATA.out.versions_kneaddata)
-    ch_multiqc_files = ch_multiqc_files.mix(KNEADDATA.out.log)
+    // KNEADDATA also emits version tuples to topic:versions.
+    ch_multiqc_files = ch_multiqc_files.mix(KNEADDATA.out.log.map { meta, f -> f })
 
     emit:
     clean_reads   = KNEADDATA.out.reads  // [ val(meta), [ clean_R1, clean_R2 ] ] → Module 2
