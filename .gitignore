@@ -1,0 +1,5 @@
+.conda/
+*.conda
+envs/
+__pycache__/
+.pytest_cache/
