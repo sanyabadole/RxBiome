@@ -1,0 +1,16 @@
+name: rxbiome
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.11
+  - openjdk=21
+  - pip
+  - pip:
+    - nf-core>=2.13
+    - pydantic>=2.0
+    - requests>=2.31
+    - pandas>=2.0
+    - pytest>=7.0
+    - rich>=13.0
