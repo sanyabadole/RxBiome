@@ -47,4 +47,3 @@ databases/*.pkl
 # Secrets
 .env
 .env.local
-EOF
