@@ -47,3 +47,5 @@ databases/*.pkl
 # Secrets
 .env
 .env.local
+results_test*/
+=
