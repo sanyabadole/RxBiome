@@ -40,6 +40,24 @@
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
                     "fa_icon": "fas fa-file-signature"
+                },
+                "drugs": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "mimetype": "text/csv",
+                    "pattern": "^\\S+\\.csv$",
+                    "description": "Path to drug library CSV file with columns: drug_name, pubchem_cid, bioavailability_level, baseline_bioavailability",
+                    "help_text": "The drug library must be a comma-separated file with at minimum a drug_name column. pubchem_cid is strongly recommended for accurate database cross-referencing.",
+                    "fa_icon": "fas fa-pills"
+                },
+                "sequencing_type": {
+                    "type": "string",
+                    "default": "wgs",
+                    "description": "Sequencing type: 'wgs' for shotgun metagenomics (full enzyme+taxa evidence) or '16s' for amplicon sequencing (taxa evidence only, confidence capped at Medium)",
+                    "help_text": "WGS mode runs MetaPhlAn4 + HUMAnN3 for both taxonomic and functional profiling. 16S mode runs QIIME2/DADA2 + MetaPhlAn taxonomy mapping for taxa-only evidence.",
+                    "fa_icon": "fas fa-dna",
+                    "enum": ["wgs", "16s"]
                 }
             }
         },
