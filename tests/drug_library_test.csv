@@ -1,0 +1,5 @@
+drug_name,pubchem_cid,bioavailability_level,baseline_bioavailability,indication
+Digoxin,2724385,medium,0.70,Heart failure
+Losartan,5311272,low,0.33,Hypertension
+Levodopa,6047,high,0.99,Parkinson's disease
+Irinotecan,60838,iv_only,0.00,Cancer chemotherapy
