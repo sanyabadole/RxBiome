@@ -97,6 +97,36 @@
                     "fa_icon": "fas fa-ban",
                     "hidden": true,
                     "default": "s3://ngi-igenomes/igenomes/"
+                },
+                "host_db": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Host reference database directory for KneadData (Bowtie2 index). Required when skip_host_decontamination is false.",
+                    "fa_icon": "fas fa-database"
+                },
+                "skip_host_decontamination": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, skip KneadData and pass FASTP reads to downstream steps (for tests/CI without a host DB).",
+                    "fa_icon": "fas fa-forward"
+                },
+                "kraken2_db": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Kraken2 database directory (built with kraken2-build).",
+                    "fa_icon": "fas fa-database"
+                },
+                "metaphlan4_db": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "MetaPhlAn Bowtie2 database directory (--bowtie2db).",
+                    "fa_icon": "fas fa-database"
+                },
+                "metaphlan4_index": {
+                    "type": "string",
+                    "default": "mpa_vJan25_CHOCOPhlAnSGB_202503",
+                    "description": "Bowtie2 index basename inside metaphlan4_db (must match *.bt2l / mpa_latest, e.g. mpa_vJan25_CHOCOPhlAnSGB_202503).",
+                    "fa_icon": "fas fa-database"
                 }
             }
         },
