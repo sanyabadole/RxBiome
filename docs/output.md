@@ -6,14 +6,24 @@ This document describes the output produced by the pipeline. Most of the plots a
 
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
-<!-- TODO nf-core: Write this documentation describing your workflow's output -->
+Current **rxbiome** outputs (under `--outdir`) include per-sample **fastp** JSON/HTML, **KneadData** logs (when host removal runs), **Kraken2** reports, **MetaPhlAn** taxonomic profiles, a collated **software versions** YAML under `pipeline_info/`, and an aggregated **MultiQC** report. Additional gene-centric and scoring modules will extend this layout in future releases.
 
 ## Pipeline overview
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
+- [QC and preprocessing](#qc-and-preprocessing) - Adapter trimming, optional host decontamination, and taxonomic profiling
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
+
+### QC and preprocessing
+
+<details markdown="1">
+<summary>Output files</summary>
+
+Per-sample outputs are written under sample-specific directories (layout depends on tool wrappers). Typical artifacts include: fastp JSON and HTML, Kraken2 `*.report` files, MetaPhlAn `*.metaphlan4_profile.txt`, and KneadData `*.log` when `--skip_host_decontamination` is false.
+
+</details>
 
 ### MultiQC
 

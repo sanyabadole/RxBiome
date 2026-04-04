@@ -6,7 +6,7 @@
 
 ## Introduction
 
-<!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
+**rxbiome** currently runs **fastp** trimming, optional **KneadData** host removal (requires `--host_db`), **Kraken2** classification, and **MetaPhlAn** profiling. Use `-profile test` for CI-style runs with stubs; for real data provide paths to **Kraken2** and **MetaPhlAn** databases (`--kraken2_db`, `--metaphlan4_db`) and a valid **MetaPhlAn** index basename (`--metaphlan4_index`) matching files on disk. See parameter help (`--help`) and `nextflow_schema.json` for the full list.
 
 ## Samplesheet input
 
