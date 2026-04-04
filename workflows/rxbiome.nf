@@ -30,15 +30,9 @@ workflow RXBIOME {
     //
     // SUBWORKFLOW: Module 1 — QC & Preprocessing
     //
-    QC_PREPROCESSING (
-        ch_samplesheet,
-        params.host_db ? file(params.host_db) : []
-    )
+    QC_PREPROCESSING ( ch_samplesheet )
     ch_versions      = ch_versions.mix(QC_PREPROCESSING.out.versions)
     ch_multiqc_files = ch_multiqc_files.mix(QC_PREPROCESSING.out.multiqc_files)
-
-    // yet to do modules 2
-
 
     //
     // Collate and save software versions

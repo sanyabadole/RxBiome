@@ -68,7 +68,7 @@ workflow {
         params.version,
         params.validate_params,
         params.monochrome_logs,
-        [], // no positional args because we're using the local config nnd its causing errors when running locally
+        [], // empty: local profile uses params only; passing CLI args breaks initialisation
         params.outdir,
         params.input,
         params.help,
