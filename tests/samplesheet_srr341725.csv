@@ -1,0 +1,2 @@
+sample,fastq_1,fastq_2
+test_sub,tests/data/test_sub_R1.fastq.gz,tests/data/test_sub_R2.fastq.gz
