@@ -6,8 +6,9 @@ work/
 
 # Pipeline outputs — never commit results
 results/
-results_test/
+results*/
 output/
+*.log
 
 # Test data outputs
 tests/data/*.bam
@@ -36,16 +37,10 @@ dashboard/node_modules/
 dashboard/build/
 dashboard/dist/
 
-# Database files — too large for git
-databases/*.bt2
-databases/*.bt2l
-databases/*.tar.gz
-databases/*.db
-databases/*.h5
-databases/*.pkl
+# Databases — too large for git (keep a README or download script outside this ignore if needed)
+databases/
 
 # Secrets
 .env
 .env.local
-results_test*/
-=
+tests/data/SRR341725_*.fastq.gz
