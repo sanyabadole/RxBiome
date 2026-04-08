@@ -9,7 +9,7 @@ include { FASTP     } from '../../modules/nf-core/fastp/main'
 include { KNEADDATA } from '../../modules/local/kneaddata/main'
 include { KRAKEN2_KRAKEN2 as KRAKEN2 } from '../../modules/nf-core/kraken2/kraken2/main'
 include { BRACKEN_BRACKEN } from '../../modules/nf-core/bracken/bracken/main'
-include { METAPHLAN4 } from '../../modules/local/metaphlan4/main'
+include { METAPHLAN_METAPHLAN as METAPHLAN4 } from '../../modules/nf-core/metaphlan/metaphlan/main'
 
 workflow QC_PREPROCESSING {
 
@@ -96,7 +96,8 @@ workflow QC_PREPROCESSING {
 
     METAPHLAN4(
         ch_clean_reads,
-        params.metaphlan4_db ? file(params.metaphlan4_db) : []
+        params.metaphlan4_db ? file(params.metaphlan4_db) : [],
+        false
     )
     ch_versions = ch_versions.mix(METAPHLAN4.out.versions)
 
