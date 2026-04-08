@@ -32,11 +32,11 @@ process METAPHLAN4 {
         --output_file ${prefix}.metaphlan4_profile.txt \\
         --bowtie2out ${prefix}.bowtie2.bz2
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        metaphlan: \$(metaphlan --version 2>&1 | grep -oP '(?<=MetaPhlAn version )\\S+')
-    END_VERSIONS
-    """
+    printf '"%s":\n    metaphlan: %s\n' \
+        "${task.process}" \
+        "\$(metaphlan --version 2>&1 | grep -oP '(?<=MetaPhlAn version )\\S+')" \
+        > versions.yml
+    """.stripIndent()
 
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
@@ -44,9 +44,6 @@ process METAPHLAN4 {
     touch ${prefix}.metaphlan4_profile.txt
     touch ${prefix}.bowtie2.bz2
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        metaphlan: 4.1.1
-    END_VERSIONS
-    """
+    printf '"%s":\n    metaphlan: 4.1.1\n' "${task.process}" > versions.yml
+    """.stripIndent()
 }
