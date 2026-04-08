@@ -116,6 +116,25 @@
                     "description": "Kraken2 database directory (built with kraken2-build).",
                     "fa_icon": "fas fa-database"
                 },
+                "bracken_readlen": {
+                    "type": "integer",
+                    "default": 150,
+                    "description": "Read length passed to Bracken (-r). Set this to match the sequencing read length.",
+                    "fa_icon": "fas fa-ruler-horizontal"
+                },
+                "bracken_level": {
+                    "type": "string",
+                    "default": "S",
+                    "description": "Taxonomic level for Bracken abundance estimation (-l).",
+                    "fa_icon": "fas fa-layer-group",
+                    "enum": ["D", "P", "C", "O", "F", "G", "S"]
+                },
+                "bracken_threshold": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Minimum reads threshold for Bracken (-t).",
+                    "fa_icon": "fas fa-filter"
+                },
                 "metaphlan4_db": {
                     "type": "string",
                     "format": "directory-path",

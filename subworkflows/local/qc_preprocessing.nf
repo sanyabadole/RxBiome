@@ -7,7 +7,8 @@
 
 include { FASTP     } from '../../modules/nf-core/fastp/main'
 include { KNEADDATA } from '../../modules/local/kneaddata/main'
-include { KRAKEN2    } from '../../modules/local/kraken2/main'
+include { KRAKEN2_KRAKEN2 as KRAKEN2 } from '../../modules/nf-core/kraken2/kraken2/main'
+include { BRACKEN_BRACKEN } from '../../modules/nf-core/bracken/bracken/main'
 include { METAPHLAN4 } from '../../modules/local/metaphlan4/main'
 
 workflow QC_PREPROCESSING {
@@ -61,10 +62,37 @@ workflow QC_PREPROCESSING {
     //
     KRAKEN2(
         ch_clean_reads,
-        params.kraken2_db ? file(params.kraken2_db) : []
+        params.kraken2_db ? file(params.kraken2_db) : [],
+        false, // save_output_fastqs
+        false  // save_reads_assignment
     )
-    ch_versions      = ch_versions.mix(KRAKEN2.out.versions)
     ch_multiqc_files = ch_multiqc_files.mix(KRAKEN2.out.report.map { meta, f -> f })
+
+    // Skip Bracken for empty reports or reports with no classified reads (taxid != 0 and reads > 0).
+    ch_kraken2_report_for_bracken = KRAKEN2.out.report.filter { meta, report ->
+        if (report.size() == 0) {
+            return false
+        }
+        report.text.readLines().any { line ->
+            def cols = line.trim().split(/\t+/)
+            if (cols.size() < 5) {
+                return false
+            }
+            try {
+                return cols[4] != '0' && cols[1].toLong() > 0L
+            } catch (Exception e) {
+                return false
+            }
+        }
+    }
+
+    ch_kraken2_db_for_bracken = params.kraken2_db ? Channel.value(file(params.kraken2_db)) : Channel.empty()
+
+    BRACKEN_BRACKEN(
+        ch_kraken2_report_for_bracken,
+        ch_kraken2_db_for_bracken
+    )
+    ch_multiqc_files = ch_multiqc_files.mix(BRACKEN_BRACKEN.out.txt.map { meta, f -> f })
 
     METAPHLAN4(
         ch_clean_reads,
@@ -76,6 +104,8 @@ workflow QC_PREPROCESSING {
     reads             = ch_clean_reads
     metaphlan_profile = METAPHLAN4.out.profile  
     kraken2_report    = KRAKEN2.out.report
+    bracken_reports   = BRACKEN_BRACKEN.out.reports
+    bracken_txt       = BRACKEN_BRACKEN.out.txt
     multiqc_files     = ch_multiqc_files
     versions          = ch_versions
 }
