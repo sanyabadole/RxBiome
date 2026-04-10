@@ -21,7 +21,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 <details markdown="1">
 <summary>Output files</summary>
 
-Per-sample outputs are written under sample-specific directories (layout depends on tool wrappers). Typical artifacts include: fastp JSON and HTML, Kraken2 `*.report` files, MetaPhlAn `*.metaphlan4_profile.txt`, and KneadData `*.log` when `--skip_host_decontamination` is false.
+Per-sample outputs are written under sample-specific directories (layout depends on tool wrappers). Typical artifacts include: fastp JSON and HTML, Kraken2 `*.report` files, MetaPhlAn `*_profile.txt`, and KneadData `*.log` when `--skip_host_decontamination` is false.
 
 </details>
 
