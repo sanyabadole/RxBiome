@@ -1,0 +1,41 @@
+nextflow_process {
+
+    name "Test Process KNEADDATA"
+    script "../main.nf"
+    process "KNEADDATA"
+
+    tag "modules"
+    tag "modules_local"
+    tag "kneaddata"
+
+    test("kneaddata - stub - fastq") {
+
+        options "-stub-run"
+
+        when {
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id: 'test', single_end: false ],
+                    [
+                        file("${projectDir}/tests/data/test_R1.fastq.gz", checkIfExists: true),
+                        file("${projectDir}/tests/data/test_R2.fastq.gz", checkIfExists: true)
+                    ]
+                ])
+                input[1] = file("${projectDir}/tests/data/dummy_kneaddata_host_db", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.reads.size() == 1 },
+                { assert process.out.log.size() == 1 },
+                { assert process.out.reads[0][1][0].size() > 0 },
+                { assert process.out.reads[0][1][1].size() > 0 }
+            )
+        }
+    }
+}
+
