@@ -69,7 +69,8 @@ workflow QC_PREPROCESSING {
     ch_multiqc_files = ch_multiqc_files.mix(KRAKEN2.out.report.map { meta, f -> f })
 
     // Skip Bracken for empty reports or reports with no classified reads (taxid != 0 and reads > 0).
-    ch_kraken2_report_for_bracken = KRAKEN2.out.report.filter { meta, report ->
+    // In `-stub-run`, module stubs may emit empty placeholder reports; still run Bracken so the smoke test covers it.
+    ch_kraken2_report_for_bracken = workflow.stubRun ? KRAKEN2.out.report : KRAKEN2.out.report.filter { meta, report ->
         if (report.size() == 0) {
             return false
         }

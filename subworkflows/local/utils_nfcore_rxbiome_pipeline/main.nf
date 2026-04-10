@@ -39,6 +39,7 @@ workflow PIPELINE_INITIALISATION {
     main:
 
     ch_versions = channel.empty()
+    def samplesheet_dir = file(params.input).parent
 
     //
     // Print version and exit if required and dump pipeline parameters to JSON file
@@ -104,10 +105,12 @@ workflow PIPELINE_INITIALISATION {
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map {
             meta, fastq_1, fastq_2 ->
+                def fq1 = fastq_1 ? (file(fastq_1).isAbsolute() ? fastq_1 : "${samplesheet_dir}/${fastq_1}") : null
+                def fq2 = fastq_2 ? (file(fastq_2).isAbsolute() ? fastq_2 : "${samplesheet_dir}/${fastq_2}") : null
                 if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
+                    return [ meta.id, meta + [ single_end:true ], [ fq1 ] ]
                 } else {
-                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
+                    return [ meta.id, meta + [ single_end:false ], [ fq1, fq2 ] ]
                 }
         }
         .groupTuple()
