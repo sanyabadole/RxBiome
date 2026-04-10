@@ -1,0 +1,40 @@
+nextflow_process {
+
+    name "Test Process METAPHLAN_METAPHLAN"
+    script "../main.nf"
+    process "METAPHLAN_METAPHLAN"
+
+    tag "modules"
+    tag "modules_nfcore"
+    tag "metaphlan"
+    tag "metaphlan/metaphlan"
+
+    test("metaphlan - stub - fastq") {
+
+        options "-stub-run"
+
+        when {
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id: 'test', single_end: true ],
+                    [ file("${projectDir}/tests/data/test_R1.fastq.gz", checkIfExists: true) ]
+                ])
+                input[1] = file("${projectDir}/tests/data/dummy_metaphlan_db", checkIfExists: true)
+                input[2] = false
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert process.out.profile.size() == 1 },
+                { assert process.out.biom.size() == 1 },
+                { assert process.out.versions.size() == 1 },
+                { assert process.out.profile[0][1].exists() }
+            )
+        }
+    }
+}
+
