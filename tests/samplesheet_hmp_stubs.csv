@@ -1,0 +1,3 @@
+sample,fastq_1,fastq_2
+SRR413665_stub,/Users/sanyabadole/Desktop/reproducible_bioinformatics/Project/rxbiome/tests/stubs/SRR413665_stub_R1.fastq.gz,/Users/sanyabadole/Desktop/reproducible_bioinformatics/Project/rxbiome/tests/stubs/SRR413665_stub_R2.fastq.gz
+SRR413666_stub,/Users/sanyabadole/Desktop/reproducible_bioinformatics/Project/rxbiome/tests/stubs/SRR413666_stub_R1.fastq.gz,/Users/sanyabadole/Desktop/reproducible_bioinformatics/Project/rxbiome/tests/stubs/SRR413666_stub_R2.fastq.gz

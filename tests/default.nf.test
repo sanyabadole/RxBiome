@@ -6,9 +6,16 @@ nextflow_pipeline {
 
     test("-profile test") {
 
+        options "-stub-run"
+
         when {
             params {
                 outdir = "$outputDir"
+                input = "${projectDir}/tests/samplesheet_hmp_stubs.csv"
+                drugs = "${projectDir}/tests/drug_library_test.csv"
+                kraken2_db = "${projectDir}/tests/data/dummy_kraken2_db"
+                metaphlan4_db = "${projectDir}/tests/data/dummy_metaphlan_db"
+                skip_host_decontamination = true
             }
         }
 
