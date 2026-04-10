@@ -37,10 +37,21 @@ dashboard/node_modules/
 dashboard/build/
 dashboard/dist/
 
-# Databases — too large for git (keep a README or download script outside this ignore if needed)
+# Databases + raw data + test stubs
 databases/
+raw_data/
+tests/stubs/
+
+# Nextflow parameter snapshots
+.params_*.json
+
+# nf-test runtime artifacts
+.nf-test/
+tests/default.nf.test.snap
 
 # Secrets
 .env
 .env.local
 tests/data/SRR341725_*.fastq.gz
+
+
