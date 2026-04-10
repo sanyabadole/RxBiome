@@ -1,0 +1,21 @@
+Changes in component 'nf-core/bracken/bracken'
+'modules/nf-core/bracken/bracken/environment.yml' is unchanged
+'modules/nf-core/bracken/bracken/meta.yml' is unchanged
+Changes in 'bracken/bracken/main.nf':
+--- modules/nf-core/bracken/bracken/main.nf
++++ modules/nf-core/bracken/bracken/main.nf
+@@ -14,7 +14,7 @@
+     output:
+     tuple val(meta), path(bracken_report)        , emit: reports
+     tuple val(meta), path(bracken_kraken_style_report), emit: txt
+-    tuple val("${task.process}"), val('bracken'), eval('bracken -v | cut -f2 -d"v"'), topic: versions, emit: versions_bracken
++    tuple val("${task.process}"), val('bracken'), eval('bracken -v 2>/dev/null | cut -f2 -d"v" || echo "3.x"'), topic: versions, emit: versions_bracken
+ 
+     when:
+     task.ext.when == null || task.ext.when
+
+'modules/nf-core/bracken/bracken/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/bracken/bracken/tests/genus_test.config' is unchanged
+'modules/nf-core/bracken/bracken/tests/nextflow.config' is unchanged
+'modules/nf-core/bracken/bracken/tests/main.nf.test' is unchanged
+************************************************************

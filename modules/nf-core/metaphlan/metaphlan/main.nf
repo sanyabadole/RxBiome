@@ -47,7 +47,7 @@ process METAPHLAN_METAPHLAN {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        metaphlan: \$(metaphlan --version 2>&1 | awk '{print \$3}')
+        metaphlan: "\$(metaphlan --version 2>/dev/null | awk '{print \$3}' || echo '4.x')"
     END_VERSIONS
     """
 
@@ -68,7 +68,7 @@ process METAPHLAN_METAPHLAN {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        metaphlan: \$(metaphlan --version 2>&1 | awk '{print \$3}')
+        metaphlan: "\$(metaphlan --version 2>/dev/null | awk '{print \$3}' || echo '4.x')"
     END_VERSIONS
     """
 }

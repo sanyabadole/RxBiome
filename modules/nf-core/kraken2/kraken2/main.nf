@@ -18,8 +18,8 @@ process KRAKEN2_KRAKEN2 {
     tuple val(meta), path('*.unclassified{.,_}*')   , optional:true, emit: unclassified_reads_fastq
     tuple val(meta), path('*classifiedreads.txt')   , optional:true, emit: classified_reads_assignment
     tuple val(meta), path('*report.txt')                           , emit: report
-    tuple val("${task.process}"), val('kraken2'), eval('kraken2 --version 2>&1 | head -1 | sed "s/^.*Kraken version //; s/ .*//"'), topic: versions, emit: versions_kraken2
-    tuple val("${task.process}"), val('pigz'), eval('pigz --version 2>&1 | sed "s/pigz //g"'), topic: versions, emit: versions_pigz
+    tuple val("${task.process}"), val('kraken2'), eval('kraken2 --version 2>/dev/null | head -1 | sed "s/^.*Kraken version //; s/ .*//" 2>/dev/null || echo "2.x"'), topic: versions, emit: versions_kraken2
+    tuple val("${task.process}"), val('pigz'), eval('pigz --version 2>/dev/null | sed "s/pigz //g" 2>/dev/null || echo "2.x"'), topic: versions, emit: versions_pigz
 
     when:
     task.ext.when == null || task.ext.when

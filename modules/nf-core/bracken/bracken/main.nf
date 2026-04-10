@@ -14,7 +14,7 @@ process BRACKEN_BRACKEN {
     output:
     tuple val(meta), path(bracken_report)        , emit: reports
     tuple val(meta), path(bracken_kraken_style_report), emit: txt
-    tuple val("${task.process}"), val('bracken'), eval('bracken -v | cut -f2 -d"v"'), topic: versions, emit: versions_bracken
+    tuple val("${task.process}"), val('bracken'), eval('bracken -v 2>/dev/null | cut -f2 -d"v" || echo "3.x"'), topic: versions, emit: versions_bracken
 
     when:
     task.ext.when == null || task.ext.when
