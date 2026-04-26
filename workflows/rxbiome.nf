@@ -9,6 +9,7 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_rxbiome_pipeline'
 include { QC_PREPROCESSING       } from '../subworkflows/local/qc_preprocessing'
+include { FUNCTIONAL_PROFILING   } from '../subworkflows/local/functional_profiling'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -33,6 +34,12 @@ workflow RXBIOME {
     QC_PREPROCESSING ( ch_samplesheet )
     ch_versions      = ch_versions.mix(QC_PREPROCESSING.out.versions)
     ch_multiqc_files = ch_multiqc_files.mix(QC_PREPROCESSING.out.multiqc_files)
+
+    FUNCTIONAL_PROFILING(
+        QC_PREPROCESSING.out.reads,
+        QC_PREPROCESSING.out.metaphlan_profile
+    )
+    ch_versions = ch_versions.mix(FUNCTIONAL_PROFILING.out.versions)
 
     //
     // Collate and save software versions

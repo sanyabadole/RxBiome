@@ -1,0 +1,9 @@
+# Pathway	Abundance
+UNMAPPED	5000.0
+UNINTEGRATED	3000.0
+PWY-5484: glycolysis II	120.5
+PWY-5484: glycolysis II|Bacteroides uniformis	80.3
+PWY-5484: glycolysis II|Akkermansia muciniphila	40.2
+PWY-7111: pyruvate fermentation	95.0
+PWY-7111: pyruvate fermentation|Faecalibacterium prausnitzii	60.0
+PWY-7111: pyruvate fermentation|Clostridium perfringens	35.0
