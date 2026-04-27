@@ -2,8 +2,10 @@ process HUMANN3 {
     tag "${meta.id}"
     label 'process_medium'
 
-    conda "bioconda::humann=3.9 bioconda::metaphlan=4.1"
-    container "quay.io/biocontainers/humann:3.9--pyh7cba7a3_0"
+    conda "bioconda::humann=3.9"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    'https://depot.galaxyproject.org/singularity/humann:3.9--py312hdfd78af_0' :
+    'quay.io/biocontainers/humann:3.9--py312hdfd78af_0' }"
 
     input:
     tuple val(meta), path(reads)

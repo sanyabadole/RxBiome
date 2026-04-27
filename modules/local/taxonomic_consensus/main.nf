@@ -2,8 +2,10 @@ process TAXONOMIC_CONSENSUS {
     tag "${meta.id}"
     label 'process_low'
 
-    conda "conda-forge::python=3.11 conda-forge::pandas=2.1"
-    container "biocontainers/pandas:2.1.0"
+    conda "conda-forge::python=3.11 conda-forge::pandas=2.2.1"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    'https://depot.galaxyproject.org/singularity/pandas:2.2.1' :
+    'quay.io/biocontainers/pandas:2.2.1' }"
 
     input:
     tuple val(meta), path(bracken_txt)
