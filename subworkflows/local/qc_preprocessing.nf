@@ -10,6 +10,7 @@ include { KNEADDATA } from '../../modules/local/kneaddata/main'
 include { KRAKEN2_KRAKEN2 as KRAKEN2 } from '../../modules/nf-core/kraken2/kraken2/main'
 include { BRACKEN_BRACKEN } from '../../modules/nf-core/bracken/bracken/main'
 include { METAPHLAN_METAPHLAN as METAPHLAN4 } from '../../modules/nf-core/metaphlan/metaphlan/main'
+include { TAXONOMIC_CONSENSUS } from '../../modules/local/taxonomic_consensus/main'
 
 workflow QC_PREPROCESSING {
 
@@ -102,12 +103,24 @@ workflow QC_PREPROCESSING {
     )
     ch_versions = ch_versions.mix(METAPHLAN4.out.versions)
 
+    ch_bracken_for_consensus = BRACKEN_BRACKEN.out.txt
+    ch_metaphlan_for_consensus = METAPHLAN4.out.profile
+    // join on sample key so each sample's Bracken + MetaPhlAn outputs are paired
+    ch_consensus_input = ch_bracken_for_consensus.join(ch_metaphlan_for_consensus, by: 0)
+
+    TAXONOMIC_CONSENSUS(
+        ch_consensus_input.map { meta, b, m -> [meta, b] },
+        ch_consensus_input.map { meta, b, m -> [meta, m] }
+    )
+    ch_versions = ch_versions.mix(TAXONOMIC_CONSENSUS.out.versions)
+
     emit:
     reads             = ch_clean_reads
     metaphlan_profile = METAPHLAN4.out.profile  
     kraken2_report    = KRAKEN2.out.report
     bracken_reports   = BRACKEN_BRACKEN.out.reports
     bracken_txt       = BRACKEN_BRACKEN.out.txt
+    consensus_taxonomy = TAXONOMIC_CONSENSUS.out.consensus
     multiqc_files     = ch_multiqc_files
     versions          = ch_versions
 }

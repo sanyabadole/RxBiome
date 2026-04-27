@@ -135,6 +135,20 @@
                     "description": "Minimum reads threshold for Bracken (-t).",
                     "fa_icon": "fas fa-filter"
                 },
+                "bracken_min_fraction": {
+                    "type": "number",
+                    "default": 0.0001,
+                    "description": "Minimum Bracken fraction_total_reads for a species to pass the consensus filter.",
+                    "help_text": "Species with fraction_total_reads below this value are assigned MEDIUM or LOW confidence in the consensus taxonomy output. Default 0.0001 (~0.01% of reads).",
+                    "fa_icon": "fas fa-filter"
+                },
+                "metaphlan_min_abundance": {
+                    "type": "number",
+                    "default": 0.01,
+                    "description": "Minimum MetaPhlAn4 relative abundance (%) for a species to pass the consensus filter.",
+                    "help_text": "Species below this relative abundance threshold are assigned MEDIUM or LOW confidence. Default 0.01%.",
+                    "fa_icon": "fas fa-filter"
+                },
                 "metaphlan4_db": {
                     "type": "string",
                     "format": "directory-path",
@@ -145,6 +159,20 @@
                     "type": "string",
                     "default": "mpa_vJan25_CHOCOPhlAnSGB_202503",
                     "description": "Bowtie2 index basename inside metaphlan4_db (must match *.bt2l / mpa_latest, e.g. mpa_vJan25_CHOCOPhlAnSGB_202503).",
+                    "fa_icon": "fas fa-database"
+                },
+                "humann3_nucleotide_db": {
+                    "type": "string",
+                    "format": "path",
+                    "description": "Path to the ChocoPhlAn nucleotide database directory for HUMANnN3.",
+                    "help_text": "Download with: humann_databases --download chocophlan full /path/to/db",
+                    "fa_icon": "fas fa-database"
+                },
+                "humann3_protein_db": {
+                    "type": "string",
+                    "format": "path",
+                    "description": "Path to the UniRef90 protein database directory for HUMANnN3.",
+                    "help_text": "Download with: humann_databases --download uniref uniref90_diamond /path/to/db",
                     "fa_icon": "fas fa-database"
                 }
             }
