@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
+"""
+Module 4 deterministic PK impact calculator.
+
+Computes per-(sample, drug) pharmacokinetic exposure shift, recommended dose,
+and uncertainty tier driven by the microbiome interaction burden from Module 3.
+"""
 
 from __future__ import annotations
 
 import argparse
+import logging
 from pathlib import Path
 import sys
 
@@ -13,15 +20,49 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from pk_impact_models import PKConfig, empty_pk_output, load_interactions, load_pk_metadata, validate_pk_output
 
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+log = logging.getLogger("pk_impact")
 
+_SCHEMA_VERSION_HEADER = "# rxbiome_pk_impact_schema_version=1.0"
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Deterministic Module 4 PK impact calculator.")
     parser.add_argument("--sample-id", required=True)
     parser.add_argument("--interactions", required=True, help="Module 3 interactions TSV")
     parser.add_argument("--drug-pk-metadata", required=True, help="Optional drug PK metadata CSV")
+    # Exposure / dose targets
     parser.add_argument("--target-exposure-multiplier", type=float, default=1.0)
     parser.add_argument("--max-dose-adjustment-fraction", type=float, default=0.5)
     parser.add_argument("--min-confidence-interval-width", type=float, default=0.1)
+    # MIF scaling (Task 1) ─────────────────────────────────────────────────
+    parser.add_argument(
+        "--mif-scale-factor",
+        type=float,
+        default=0.5,
+        help=(
+            "Divisor in mif_scaled = 1 - exp(-MIF / scale_factor). "
+            "Default 0.5 suits MIF range 0–1. Use 20 for legacy 0–100 range."
+        ),
+    )
+    # Clearance / AUC clip bounds (Task 5) ─────────────────────────────────
+    parser.add_argument("--clearance-clip-min", type=float, default=0.7,
+                        help="Minimum predicted clearance multiplier (safety floor)")
+    parser.add_argument("--clearance-clip-max", type=float, default=1.3,
+                        help="Maximum predicted clearance multiplier (safety ceiling)")
+    parser.add_argument("--auc-clip-min", type=float, default=0.7,
+                        help="Minimum predicted AUC multiplier")
+    parser.add_argument("--auc-clip-max", type=float, default=1.4,
+                        help="Maximum predicted AUC multiplier")
+    # Confidence interval shape (Task 5) ───────────────────────────────────
+    parser.add_argument("--ci-base-uncertainty-scale", type=float, default=0.35,
+                        help="Coefficient: CI half-width = (1-mif_scaled)*this + ci_min_offset")
+    parser.add_argument("--ci-min-offset", type=float, default=0.05,
+                        help="Minimum CI half-width offset (prevents zero-width intervals)")
+    # Outputs
     parser.add_argument("--output", required=True)
     parser.add_argument("--summary-output", required=True)
     parser.add_argument("--dose-plot-output", required=True)
@@ -29,6 +70,9 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+# ---------------------------------------------------------------------------
+# Risk tier classification
+# ---------------------------------------------------------------------------
 def _tier_from_uncertainty(ci_width: float, abs_change_fraction: float) -> str:
     if ci_width <= 0.20 and abs_change_fraction >= 0.20:
         return "HIGH"
@@ -37,11 +81,30 @@ def _tier_from_uncertainty(ci_width: float, abs_change_fraction: float) -> str:
     return "LOW"
 
 
-def compute_pk_impact(interactions: pd.DataFrame, metadata: pd.DataFrame, cfg: PKConfig, sample_id: str) -> pd.DataFrame:
+# ---------------------------------------------------------------------------
+# Core PK impact computation
+# ---------------------------------------------------------------------------
+def compute_pk_impact(
+    interactions: pd.DataFrame,
+    metadata: pd.DataFrame,
+    cfg: PKConfig,
+    sample_id: str,
+) -> pd.DataFrame:
     if interactions.empty:
         return empty_pk_output()
 
-    # Pick dominant species as the top interaction contributor per sample+drug.
+    # ── Task 4.2: NaN guard on interaction_confidence ────────────────────
+    n_nan = int(interactions["interaction_confidence"].isna().sum())
+    if n_nan > 0:
+        log.warning(
+            "%d rows with NaN interaction_confidence dropped for sample %s",
+            n_nan, sample_id,
+        )
+        interactions = interactions.dropna(subset=["interaction_confidence"])
+    if interactions.empty:
+        return empty_pk_output()
+
+    # Dominant species = top-confidence organism per (sample, drug)
     top_species = (
         interactions.sort_values("interaction_confidence", ascending=False)
         .drop_duplicates(subset=["sample_id", "drug_name", "drugbank_id"], keep="first")
@@ -49,11 +112,10 @@ def compute_pk_impact(interactions: pd.DataFrame, metadata: pd.DataFrame, cfg: P
         .rename(columns={"species": "dominant_species"})
     )
 
+    # Mean interaction_confidence per (sample, drug) → MIF
     grp = (
         interactions.groupby(["sample_id", "drug_name", "drugbank_id"], as_index=False)
-        .agg(
-            microbiome_impact_factor=("interaction_confidence", "mean"),
-        )
+        .agg(microbiome_impact_factor=("interaction_confidence", "mean"))
     )
     grp = grp.merge(top_species, on=["sample_id", "drug_name", "drugbank_id"], how="left")
 
@@ -61,14 +123,43 @@ def compute_pk_impact(interactions: pd.DataFrame, metadata: pd.DataFrame, cfg: P
     if sample_df.empty:
         return empty_pk_output()
 
+    # ── Task 4.1: Per-drug MIF bounds check ──────────────────────────────
+    for _, row in sample_df.iterrows():
+        mif_val = float(row["microbiome_impact_factor"])
+        drug_name = str(row["drug_name"])
+        if mif_val < 0.0:
+            log.warning(
+                "Negative MIF (%.4f) for %s — clipping to 0.0",
+                mif_val, drug_name,
+            )
+        elif mif_val > 10 * cfg.mif_scale_factor:
+            log.warning(
+                "Unusually large MIF (%.4f) for %s — mif_scaled will saturate at 1.0",
+                mif_val, drug_name,
+            )
+
     meta_keep = metadata.drop_duplicates(subset=["drug_name", "drugbank_id"]).copy()
     merged = sample_df.merge(meta_keep, on=["drug_name", "drugbank_id"], how="left")
-    merged["standard_dose_mg"] = merged["standard_dose_mg"].fillna(100.0)
 
-    # Smoothly map arbitrary interaction scales onto [0,1] without hard clipping.
-    mif_scaled = (1.0 - np.exp(-merged["microbiome_impact_factor"].astype(float) / 20.0)).clip(0.0, 1.0)
-    clearance_multiplier = (1.0 + (mif_scaled - 0.5) * 0.6).clip(0.7, 1.3)
-    auc_multiplier = (1.0 / clearance_multiplier).clip(0.7, 1.4)
+    # ── Task 4.3: Log drugs missing from PK metadata ─────────────────────
+    missing_dose_mask = merged["standard_dose_mg"].isna()
+    for drug in merged.loc[missing_dose_mask, "drug_name"]:
+        log.warning(
+            "Drug '%s' not found in PK metadata — using fallback standard_dose=500mg",
+            drug,
+        )
+    merged["standard_dose_mg"] = merged["standard_dose_mg"].fillna(500.0)
+
+    # ── Task 1 + Task 4.1: Smooth MIF → [0,1] with configurable scale ────
+    # Clip at 0 before exp to handle any numeric edge cases with negative MIF.
+    mif_for_scaling = merged["microbiome_impact_factor"].astype(float).clip(lower=0.0)
+    mif_scaled = (1.0 - np.exp(-mif_for_scaling / cfg.mif_scale_factor)).clip(0.0, 1.0)
+
+    # ── Task 5: Use configurable clip bounds for clearance and AUC ───────
+    clearance_multiplier = (1.0 + (mif_scaled - 0.5) * 0.6).clip(
+        cfg.clearance_clip_min, cfg.clearance_clip_max
+    )
+    auc_multiplier = (1.0 / clearance_multiplier).clip(cfg.auc_clip_min, cfg.auc_clip_max)
 
     desired_dose = merged["standard_dose_mg"] * (cfg.target_exposure_multiplier / auc_multiplier)
     raw_change_fraction = (desired_dose / merged["standard_dose_mg"]) - 1.0
@@ -78,7 +169,8 @@ def compute_pk_impact(interactions: pd.DataFrame, metadata: pd.DataFrame, cfg: P
     )
     recommended_dose = merged["standard_dose_mg"] * (1.0 + clipped_change_fraction)
 
-    base_uncertainty = (1.0 - mif_scaled) * 0.35 + 0.05
+    # ── Task 5: Configurable CI shape parameters ──────────────────────────
+    base_uncertainty = (1.0 - mif_scaled) * cfg.ci_base_uncertainty_scale + cfg.ci_min_offset
     ci_half_width = np.maximum(cfg.min_confidence_interval_width / 2.0, base_uncertainty / 2.0)
     confidence_low = (recommended_dose * (1.0 - ci_half_width)).clip(lower=0.0)
     confidence_high = recommended_dose * (1.0 + ci_half_width)
@@ -87,7 +179,8 @@ def compute_pk_impact(interactions: pd.DataFrame, metadata: pd.DataFrame, cfg: P
 
     abs_change_fraction = clipped_change_fraction.abs()
     risk_tier = [
-        _tier_from_uncertainty(ci_w, delta) for ci_w, delta in zip(ci_width_fraction, abs_change_fraction, strict=False)
+        _tier_from_uncertainty(ci_w, delta)
+        for ci_w, delta in zip(ci_width_fraction, abs_change_fraction, strict=False)
     ]
 
     out = pd.DataFrame(
@@ -111,6 +204,9 @@ def compute_pk_impact(interactions: pd.DataFrame, metadata: pd.DataFrame, cfg: P
     return out
 
 
+# ---------------------------------------------------------------------------
+# Per-sample summary
+# ---------------------------------------------------------------------------
 def build_sample_summary(pk: pd.DataFrame) -> pd.DataFrame:
     if pk.empty:
         return pd.DataFrame(
@@ -144,6 +240,9 @@ def build_sample_summary(pk: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+# ---------------------------------------------------------------------------
+# SVG bar chart helper
+# ---------------------------------------------------------------------------
 def _write_bar_svg(labels: list[str], values: list[float], title: str, y_label: str, out_path: Path) -> None:
     width, height = 800, 420
     left, right, top, bottom = 80, 20, 60, 100
@@ -174,6 +273,9 @@ def _write_bar_svg(labels: list[str], values: list[float], title: str, y_label: 
     out_path.write_text("\n".join(lines), encoding="utf-8")
 
 
+# ---------------------------------------------------------------------------
+# Report writers
+# ---------------------------------------------------------------------------
 def write_reports(pk: pd.DataFrame, summary_out: Path, dose_plot_out: Path, risk_plot_out: Path) -> None:
     summary = build_sample_summary(pk)
     summary.to_csv(summary_out, sep="\t", index=False)
@@ -197,12 +299,29 @@ def write_reports(pk: pd.DataFrame, summary_out: Path, dose_plot_out: Path, risk
     )
 
 
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
 def main() -> int:
     args = parse_args()
+
+    # Task 1: log scale factor at startup
+    log.info(
+        "MIF scale factor: %s (MIF range calibration — use 0.5 for 0–1 range, 20 for legacy 0–100)",
+        args.mif_scale_factor,
+    )
+
     cfg = PKConfig(
         target_exposure_multiplier=args.target_exposure_multiplier,
         max_dose_adjustment_fraction=args.max_dose_adjustment_fraction,
         min_confidence_interval_width=args.min_confidence_interval_width,
+        mif_scale_factor=args.mif_scale_factor,
+        clearance_clip_min=args.clearance_clip_min,
+        clearance_clip_max=args.clearance_clip_max,
+        auc_clip_min=args.auc_clip_min,
+        auc_clip_max=args.auc_clip_max,
+        ci_base_uncertainty_scale=args.ci_base_uncertainty_scale,
+        ci_min_offset=args.ci_min_offset,
     )
 
     interactions = load_interactions(args.interactions)
@@ -213,7 +332,13 @@ def main() -> int:
 
     out = compute_pk_impact(interactions=interactions, metadata=metadata, cfg=cfg, sample_id=args.sample_id)
     validate_pk_output(out)
-    out.to_csv(args.output, sep="\t", index=False)
+
+    # Task 4.4: Write schema version header before TSV data
+    out_path = Path(args.output)
+    with out_path.open("w", encoding="utf-8") as fh:
+        fh.write(_SCHEMA_VERSION_HEADER + "\n")
+        out.to_csv(fh, sep="\t", index=False)
+
     write_reports(
         pk=out,
         summary_out=Path(args.summary_output),
