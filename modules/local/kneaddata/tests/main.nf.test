@@ -15,14 +15,17 @@ nextflow_process {
         when {
             process {
                 """
+                ch_bt2 = Channel.fromPath("${projectDir}/tests/data/dummy_kneaddata_host_db/hg37dec_v0.1*.bt2", checkIfExists: true).collect()
                 input[0] = Channel.of([
                     [ id: 'test', single_end: false ],
                     [
                         file("${projectDir}/tests/data/test_R1.fastq.gz", checkIfExists: true),
                         file("${projectDir}/tests/data/test_R2.fastq.gz", checkIfExists: true)
                     ]
-                ])
-                input[1] = file("${projectDir}/tests/data/dummy_kneaddata_host_db", checkIfExists: true)
+                ]).combine(ch_bt2).map { row ->
+                    def L = row instanceof List ? row : [row]
+                    tuple(L[0], L[1], L.subList(2, L.size()))
+                }
                 """
             }
         }

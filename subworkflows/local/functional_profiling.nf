@@ -21,7 +21,7 @@ workflow FUNCTIONAL_PROFILING {
     def ch_versions = Channel.empty()
 
     if (!params.humann3_nucleotide_db || !params.humann3_protein_db) {
-        log.warn '[rxbiome] HUMANnN3 DBs not set — skipping functional profiling. Set --humann3_nucleotide_db and --humann3_protein_db.'
+        log.warn '[rxbiome] HUMAnN3 DBs not set — skipping functional profiling. Set --humann3_nucleotide_db and --humann3_protein_db.'
     } else {
         ch_humann_input = ch_reads.join(ch_metaphlan_profile, by: 0)
 

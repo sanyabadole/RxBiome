@@ -9,8 +9,7 @@ process KNEADDATA {
         'quay.io/biocontainers/kneaddata:0.12.0--pyhdfd78af_1' }"
 
     input:
-    tuple val(meta), path(reads)
-    path  host_db
+    tuple val(meta), path(reads), path(host_bt2, arity: '1..*')
 
     output:
     tuple val(meta), path("*_paired_*.fastq.gz"), emit: reads
@@ -23,6 +22,7 @@ process KNEADDATA {
     script:
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def host_ref = "${params.host_bowtie2_prefix}"
     if (meta.single_end) {
         """
         set -euo pipefail
@@ -32,7 +32,7 @@ process KNEADDATA {
 
         kneaddata \\
             --unpaired ${prefix}_1.fastq \\
-            --reference-db ${host_db} \\
+            --reference-db ${host_ref} \\
             -o . \\
             --output-prefix ${prefix} \\
             --threads ${task.cpus} \\
@@ -60,7 +60,7 @@ process KNEADDATA {
         kneaddata \\
             --input1 ${prefix}_1.fastq \\
             --input2 ${prefix}_2.fastq \\
-            --reference-db ${host_db} \\
+            --reference-db ${host_ref} \\
             -o . \\
             --output-prefix ${prefix} \\
             --threads ${task.cpus} \\

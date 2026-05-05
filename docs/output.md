@@ -6,13 +6,15 @@ This document describes the output produced by the pipeline. Most of the plots a
 
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
-Current **rxbiome** outputs (under `--outdir`) include per-sample **fastp** JSON/HTML, **KneadData** logs (when host removal runs), **Kraken2** reports, **MetaPhlAn** taxonomic profiles, a collated **software versions** YAML under `pipeline_info/`, and an aggregated **MultiQC** report. Additional gene-centric and scoring modules will extend this layout in future releases.
+Current **rxbiome** outputs (under `--outdir`) include per-sample **fastp** JSON/HTML, **KneadData** logs (when host removal runs), **Kraken2** reports, **Bracken** abundance tables, **MetaPhlAn** taxonomic profiles, optional **HUMAnN3** functional profiles (when database paths are set), **drug–microbiome interaction** scores, a collated **software versions** YAML under `pipeline_info/`, and an aggregated **MultiQC** report.
 
 ## Pipeline overview
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
 - [QC and preprocessing](#qc-and-preprocessing) - Adapter trimming, optional host decontamination, and taxonomic profiling
+- [Functional profiling](#functional-profiling) - Optional HUMAnN3 gene and pathway abundances
+- [Drug–microbiome interactions](#drug-microbiome-interactions) - SMILES-enriched drug library and MicrobeRX-based scoring
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
@@ -22,6 +24,29 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 <summary>Output files</summary>
 
 Per-sample outputs are written under sample-specific directories (layout depends on tool wrappers). Typical artifacts include: fastp JSON and HTML, Kraken2 `*.report` files, MetaPhlAn `*_profile.txt`, and KneadData `*.log` when `--skip_host_decontamination` is false.
+
+</details>
+
+### Functional profiling
+
+<details markdown="1">
+<summary>Output files</summary>
+
+When `--humann3_nucleotide_db` and `--humann3_protein_db` are set, per-sample **HUMAnN3** outputs are published under:
+
+- `functional_profiling/<sample_id>/` — gene families, pathway abundance/coverage tables, and related logs.
+
+If those parameters are omitted, this stage is skipped and module 3 uses a neutral pathway placeholder (pathway weight defaults to 1.0 in the scorer).
+
+</details>
+
+### Drug–microbiome interactions
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `drugbank/` — `drugs_with_smiles.tsv` produced from `--drugs` (prefilled or API-resolved SMILES).
+- `interactions/` — per-sample `*.drug_microbiome_interactions.tsv` with columns: sample, drug metadata, species, taxonomic confidence, MicrobeRX score, pathway coverage weight, combined interaction confidence, and risk tier.
 
 </details>
 
