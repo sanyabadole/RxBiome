@@ -21,11 +21,13 @@ workflow PK_REPORTING {
     PK_REPORT_AGGREGATE(ch_pk_impact_files)
     ch_versions = ch_versions.mix(PK_REPORT_AGGREGATE.out.versions)
     PK_REPORT_PLOTS(
+        PK_REPORT_AGGREGATE.out.cohort_pk_impact,
         PK_REPORT_AGGREGATE.out.cohort_drug_summary,
         PK_REPORT_AGGREGATE.out.cohort_sample_summary
     )
     ch_versions = ch_versions.mix(PK_REPORT_PLOTS.out.versions)
     PK_REPORT_RENDER(
+        PK_REPORT_AGGREGATE.out.cohort_pk_impact,
         PK_REPORT_AGGREGATE.out.cohort_drug_summary,
         PK_REPORT_AGGREGATE.out.cohort_sample_summary,
         PK_REPORT_PLOTS.out.drug_plot,

@@ -8,6 +8,7 @@ process PK_REPORT_RENDER {
     'biocontainers/pandas:2.2.1' }"
 
     input:
+    path(cohort_pk_impact)
     path(cohort_drug_summary)
     path(cohort_sample_summary)
     path(cohort_drug_plot)
@@ -25,10 +26,11 @@ process PK_REPORT_RENDER {
     script:
     """
     pk_report_render.py \\
-      --cohort-drug-summary ${cohort_drug_summary} \\
+      --cohort-pk-impact      ${cohort_pk_impact}     \\
+      --cohort-drug-summary   ${cohort_drug_summary}  \\
       --cohort-sample-summary ${cohort_sample_summary} \\
-      --cohort-drug-plot ${cohort_drug_plot} \\
-      --cohort-sample-plot ${cohort_sample_plot} \\
+      --cohort-drug-plot      ${cohort_drug_plot}     \\
+      --cohort-sample-plot    ${cohort_sample_plot}   \\
       --output cohort.pk_report.md
 
     cp ${cohort_drug_plot} cohort.drug_dose_change.report.svg
