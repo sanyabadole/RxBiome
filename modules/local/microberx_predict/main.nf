@@ -4,8 +4,8 @@ process MICROBERX_PREDICT {
 
     conda "conda-forge::python=3.11 conda-forge::pandas=2.2.1 conda-forge::numpy requests pip"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-    'docker://docker.io/sanyabadole/rxbiome-microberx:1.0' :
-    'docker.io/sanyabadole/rxbiome-microberx:1.0' }"
+    'docker://docker.io/sbadole/rxbiome-microberx:1.1' :
+    'docker.io/sbadole/rxbiome-microberx:1.1' }"
 
     input:
     tuple val(meta), path(consensus_taxonomy), path(drugs_with_smiles), path(pathabundance)
