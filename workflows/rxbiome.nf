@@ -137,11 +137,12 @@ workflow RXBIOME {
     )
 
     emit:
-    interactions = DRUG_MICROBIOME_INTERACTION.out.interactions
-    pk_impact = PK_IMPACT_MODELING.out.pk_impact
-    pk_summary = PK_IMPACT_MODELING.out.pk_summary
-    pk_dose_plot = PK_IMPACT_MODELING.out.dose_plot
-    pk_risk_plot = PK_IMPACT_MODELING.out.risk_plot
+    interactions  = DRUG_MICROBIOME_INTERACTION.out.interactions
+    qc_report     = PK_IMPACT_MODELING.out.qc_report   // primary per-sample HTML report
+    pk_impact     = PK_IMPACT_MODELING.out.pk_impact
+    pk_summary    = PK_IMPACT_MODELING.out.pk_summary
+    pk_dose_plot  = PK_IMPACT_MODELING.out.dose_plot
+    pk_risk_plot  = PK_IMPACT_MODELING.out.risk_plot
     cohort_pk_impact = PK_REPORTING.out.cohort_pk_impact
     cohort_drug_summary = PK_REPORTING.out.cohort_drug_summary
     cohort_sample_summary = PK_REPORTING.out.cohort_sample_summary
