@@ -21,22 +21,36 @@ process PK_IMPACT {
     task.ext.when == null || task.ext.when
 
     script:
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    def target_exposure_multiplier = params.pk_target_exposure_multiplier != null ? params.pk_target_exposure_multiplier : 1.0
-    def max_dose_adjustment_fraction = params.pk_max_dose_adjustment_fraction != null ? params.pk_max_dose_adjustment_fraction : 0.5
-    def min_confidence_interval_width = params.pk_min_confidence_interval_width != null ? params.pk_min_confidence_interval_width : 0.1
+    def prefix                      = task.ext.prefix ?: "${meta.id}"
+    def target_exposure_multiplier  = params.pk_target_exposure_multiplier      != null ? params.pk_target_exposure_multiplier      : 1.0
+    def max_dose_adjustment_fraction = params.pk_max_dose_adjustment_fraction   != null ? params.pk_max_dose_adjustment_fraction     : 0.5
+    def min_confidence_interval_width = params.pk_min_confidence_interval_width != null ? params.pk_min_confidence_interval_width    : 0.1
+    def mif_scale_factor            = params.pk_mif_scale_factor                != null ? params.pk_mif_scale_factor                 : 0.5
+    def clearance_clip_min          = params.pk_clearance_clip_min              != null ? params.pk_clearance_clip_min               : 0.7
+    def clearance_clip_max          = params.pk_clearance_clip_max              != null ? params.pk_clearance_clip_max               : 1.3
+    def auc_clip_min                = params.pk_auc_clip_min                    != null ? params.pk_auc_clip_min                     : 0.7
+    def auc_clip_max                = params.pk_auc_clip_max                    != null ? params.pk_auc_clip_max                     : 1.4
+    def ci_base_uncertainty_scale   = params.pk_ci_base_uncertainty_scale       != null ? params.pk_ci_base_uncertainty_scale        : 0.35
+    def ci_min_offset               = params.pk_ci_min_offset                   != null ? params.pk_ci_min_offset                    : 0.05
     """
     pk_impact.py \\
-        --sample-id ${meta.id} \\
-        --interactions ${interactions} \\
-        --drug-pk-metadata ${drug_pk_metadata} \\
-        --target-exposure-multiplier ${target_exposure_multiplier} \\
-        --max-dose-adjustment-fraction ${max_dose_adjustment_fraction} \\
+        --sample-id                     ${meta.id}                    \\
+        --interactions                  ${interactions}               \\
+        --drug-pk-metadata              ${drug_pk_metadata}           \\
+        --target-exposure-multiplier    ${target_exposure_multiplier} \\
+        --max-dose-adjustment-fraction  ${max_dose_adjustment_fraction} \\
         --min-confidence-interval-width ${min_confidence_interval_width} \\
-        --output ${prefix}.pk_impact.tsv \\
-        --summary-output ${prefix}.pk_summary.tsv \\
-        --dose-plot-output ${prefix}.dose_change.svg \\
-        --risk-plot-output ${prefix}.risk_tier_counts.svg
+        --mif-scale-factor              ${mif_scale_factor}           \\
+        --clearance-clip-min            ${clearance_clip_min}         \\
+        --clearance-clip-max            ${clearance_clip_max}         \\
+        --auc-clip-min                  ${auc_clip_min}               \\
+        --auc-clip-max                  ${auc_clip_max}               \\
+        --ci-base-uncertainty-scale     ${ci_base_uncertainty_scale}  \\
+        --ci-min-offset                 ${ci_min_offset}              \\
+        --output                        ${prefix}.pk_impact.tsv       \\
+        --summary-output                ${prefix}.pk_summary.tsv      \\
+        --dose-plot-output              ${prefix}.dose_change.svg     \\
+        --risk-plot-output              ${prefix}.risk_tier_counts.svg
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

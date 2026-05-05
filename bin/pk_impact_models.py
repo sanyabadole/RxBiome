@@ -58,9 +58,20 @@ PK_OUTPUT_COLUMNS = [
 
 @dataclass(frozen=True)
 class PKConfig:
+    # Dose/exposure targets
     target_exposure_multiplier: float = 1.0
     max_dose_adjustment_fraction: float = 0.5
     min_confidence_interval_width: float = 0.1
+    # MIF scaling (Task 1 / Task 5)
+    mif_scale_factor: float = 0.5          # divisor in 1-exp(-MIF/scale); 0.5 for 0-1 range, 20 for legacy 0-100
+    # Clearance/AUC clip bounds (Task 5)
+    clearance_clip_min: float = 0.7
+    clearance_clip_max: float = 1.3
+    auc_clip_min: float = 0.7
+    auc_clip_max: float = 1.4
+    # Confidence interval shape (Task 5)
+    ci_base_uncertainty_scale: float = 0.35   # coefficient: width = (1-mif_scaled)*this + offset
+    ci_min_offset: float = 0.05               # minimum CI half-width offset
 
 
 def _ensure_columns(df: pd.DataFrame, required: set[str], table_name: str) -> None:

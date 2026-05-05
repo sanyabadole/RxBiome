@@ -25,7 +25,8 @@ def parse_args() -> argparse.Namespace:
 def load_pk_impact_tables(paths: list[str]) -> pd.DataFrame:
     frames: list[pd.DataFrame] = []
     for p in paths:
-        df = pd.read_csv(p, sep="\t")
+        # comment='#' skips the schema-version header written by pk_impact.py
+        df = pd.read_csv(p, sep="\t", comment="#")
         if not df.empty:
             frames.append(df)
     if not frames:
