@@ -4,6 +4,7 @@ import argparse
 import csv
 import hashlib
 import math
+import os
 import re
 import sys
 from pathlib import Path
@@ -24,6 +25,9 @@ OUTPUT_COLUMNS = [
     "risk_tier",
 ]
 
+# One process may score many drugs — load AGORA tables once.
+_MICROBERX_TABLES: dict = {}
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -38,6 +42,23 @@ def parse_args():
         help="Optional HUMAnN3 pathabundance TSV; if missing/empty, neutral pathway weight is used.",
     )
     parser.add_argument("--microberx-min-score", type=float, default=0.3)
+    parser.add_argument(
+        "--microberx-cutoff",
+        type=float,
+        default=0.45,
+        help="MetabolitePredictor confidence cutoff (sum of three similarity terms).",
+    )
+    parser.add_argument(
+        "--microberx-max-rules",
+        type=int,
+        default=400,
+        help="Max reaction rules to evaluate per drug (0 = full catalogue).",
+    )
+    parser.add_argument(
+        "--microberx-biosystem",
+        default="gutmicrobes",
+        help="MetabolitePredictor biosystem: gutmicrobes, human, or all.",
+    )
     parser.add_argument("--high-threshold", type=float, default=0.7)
     parser.add_argument("--medium-threshold", type=float, default=0.4)
     parser.add_argument("--output", required=True, help="Output interactions TSV")
@@ -127,60 +148,153 @@ def _fallback_microberx_score(species, smiles):
     return round(0.2 + (0.79 * raw), 6)
 
 
-def _extract_score_from_result(result):
-    if isinstance(result, (float, int)):
-        return float(result)
-    if isinstance(result, dict):
-        if "score" in result:
-            return float(result["score"])
-        if "reaction_score" in result:
-            return float(result["reaction_score"])
-        if "confidence" in result:
-            return float(result["confidence"])
-        for value in result.values():
-            extracted = _extract_score_from_result(value)
-            if extracted is not None:
-                return extracted
-    if isinstance(result, list):
-        for item in result:
-            extracted = _extract_score_from_result(item)
-            if extracted is not None:
-                return extracted
-    return None
+def _confidence_unit(score: float) -> float:
+    """MicrobeRX confidence_score is a sum of three similarity-style terms (roughly 0–3)."""
+    if score is None or (isinstance(score, float) and math.isnan(score)):
+        return 0.0
+    return max(0.0, min(1.0, float(score) / 3.0))
 
 
-def run_microberx_scores(drug_smiles, species_list):
+def _reaction_confidence_map(pred_df: pd.DataFrame) -> dict[str, float]:
+    out: dict[str, float] = {}
+    if pred_df is None or pred_df.empty or "confidence_score" not in pred_df.columns:
+        return out
+    for _, row in pred_df.iterrows():
+        try:
+            conf = float(row["confidence_score"])
+        except (TypeError, ValueError):
+            continue
+        for col in ("reaction_id", "bigg_reaction"):
+            if col not in row.index:
+                continue
+            val = row[col]
+            if pd.isna(val):
+                continue
+            key = str(val).strip()
+            if not key or key.lower() == "nan":
+                continue
+            out[key] = max(out.get(key, 0.0), conf)
+    return out
+
+
+def _microbes_lookup():
+    if "mdata" not in _MICROBERX_TABLES:
+        from microberx.DataFiles import load_microbes_data, load_microbes_reactions
+
+        _MICROBERX_TABLES["mdata"] = load_microbes_data()
+        _MICROBERX_TABLES["mrxn"] = load_microbes_reactions()
+    return _MICROBERX_TABLES["mdata"], _MICROBERX_TABLES["mrxn"]
+
+
+def _species_norm_lookup(mdata: pd.DataFrame, mrxn: pd.DataFrame) -> dict[str, set[str]]:
+    """Map normalized Species label -> AGORA strain index names present in MicrobesReactions."""
+    out: dict[str, set[str]] = {}
+    valid_index = set(mrxn.index.astype(str))
+    for _, row in mdata.iterrows():
+        sp = row.get("Species")
+        if pd.isna(sp):
+            continue
+        key = _norm_species(sp)
+        bucket = out.setdefault(key, set())
+        for col in ("microbe_name", "Strain"):
+            val = row.get(col)
+            if pd.isna(val):
+                continue
+            name = str(val).strip()
+            if name and name in valid_index:
+                bucket.add(name)
+    return out
+
+
+def _species_scores_from_predictions(
+    pred_df: pd.DataFrame,
+    species_list: list[str],
+) -> dict[str, float]:
+    """Map consensus species names to 0–1 scores using AGORA reaction overlap."""
+    if pred_df is None or pred_df.empty:
+        return {sp: 0.0 for sp in species_list}
+
+    rxn_conf = _reaction_confidence_map(pred_df)
+    if not rxn_conf:
+        peak = _confidence_unit(float(pred_df["confidence_score"].max()))
+        return {sp: round(0.35 * peak, 6) for sp in species_list}
+
     try:
-        from microberx import MicrobeRX  # type: ignore
-    except Exception:
-        print(
-            "WARNING: MicrobeRX import failed; using deterministic fallback scores.",
-            file=sys.stderr,
-        )
-        return {species: _fallback_microberx_score(species, drug_smiles) for species in species_list}
+        mdata, mrxn = _microbes_lookup()
+        species_to_strains = _species_norm_lookup(mdata, mrxn)
+    except Exception as exc:
+        print(f"WARNING: could not load MicrobeRX microbe tables ({exc}); using global activity only.", file=sys.stderr)
+        peak = _confidence_unit(float(pred_df["confidence_score"].max()))
+        return {sp: round(0.35 * peak, 6) for sp in species_list}
 
+    global_peak = _confidence_unit(float(pred_df["confidence_score"].max()))
+    out: dict[str, float] = {}
+    for sp in species_list:
+        key = _norm_species(sp)
+        strains = set(species_to_strains.get(key, ()))
+        best_raw = 0.0
+        for strain in strains:
+            if strain not in mrxn.index:
+                continue
+            row = mrxn.loc[strain]
+            for rxn_col, cell in row.items():
+                if pd.isna(cell) or str(cell).strip() == "":
+                    continue
+                col = str(rxn_col).strip()
+                if col in rxn_conf:
+                    best_raw = max(best_raw, rxn_conf[col])
+        if best_raw > 0.0:
+            out[sp] = round(_confidence_unit(best_raw), 6)
+        else:
+            out[sp] = round(0.35 * global_peak, 6)
+    return out
+
+
+def run_microberx_scores(
+    drug_smiles: str,
+    species_list: list[str],
+    cut_off: float,
+    biosystem: str,
+    max_rules: int,
+) -> dict[str, float]:
+    os.environ.setdefault("TQDM_DISABLE", "1")
     try:
-        engine = MicrobeRX()
-        results = engine.predict(smiles=drug_smiles, microbes=species_list)
+        from rdkit import Chem
+        from microberx.MetabolitePredictor import MetabolitePredictor
     except Exception as exc:
         print(
-            f"WARNING: MicrobeRX prediction failed ({exc}); using fallback scores.",
+            f"WARNING: MicrobeRX / RDKit import failed ({exc}); using deterministic fallback scores.",
             file=sys.stderr,
         )
         return {species: _fallback_microberx_score(species, drug_smiles) for species in species_list}
 
-    scores = {}
-    if isinstance(results, dict):
-        for species in species_list:
-            candidate = results.get(species)
-            score = _extract_score_from_result(candidate)
-            if score is None:
-                score = _fallback_microberx_score(species, drug_smiles)
-            scores[species] = max(0.0, min(1.0, float(score)))
-        return scores
+    mol = Chem.MolFromSmiles(drug_smiles)
+    if mol is None:
+        print("WARNING: invalid drug SMILES for MicrobeRX; using fallback scores.", file=sys.stderr)
+        return {species: _fallback_microberx_score(species, drug_smiles) for species in species_list}
 
-    # Unknown structure; robust fallback.
-    return {species: _fallback_microberx_score(species, drug_smiles) for species in species_list}
+    bs = (biosystem or "gutmicrobes").strip().lower()
+    if bs not in {"all", "human", "gutmicrobes"}:
+        print(f"WARNING: unknown biosystem {biosystem!r}; using gutmicrobes.", file=sys.stderr)
+        bs = "gutmicrobes"
+
+    try:
+        predictor = MetabolitePredictor(mol, query_name="query", cut_off=cut_off, biosystem=bs)
+        if max_rules > 0 and len(predictor.rules_table) > max_rules:
+            predictor.rules_table = predictor.rules_table.iloc[:max_rules].copy()
+        predictor.run_prediction()
+        pred_df = predictor.predicted_metabolites
+    except Exception as exc:
+        print(
+            f"WARNING: MicrobeRX MetabolitePredictor failed ({exc}); using fallback scores.",
+            file=sys.stderr,
+        )
+        return {species: _fallback_microberx_score(species, drug_smiles) for species in species_list}
+
+    if pred_df is None or pred_df.empty:
+        return {species: _fallback_microberx_score(species, drug_smiles) for species in species_list}
+
+    return _species_scores_from_predictions(pred_df, species_list)
 
 
 def assign_risk_tier(score, high_th, med_th):
@@ -199,6 +313,9 @@ def build_interaction_rows(
     microberx_min_score,
     high_threshold,
     medium_threshold,
+    microberx_cutoff,
+    microberx_max_rules,
+    microberx_biosystem,
 ):
     rows = []
     tax_weight = {"HIGH": 1.0, "MEDIUM": 0.5}
@@ -213,7 +330,13 @@ def build_interaction_rows(
 
     for _, drug in drugs_df.iterrows():
         smiles = str(drug["smiles"])
-        species_scores = run_microberx_scores(smiles, species_list)
+        species_scores = run_microberx_scores(
+            smiles,
+            species_list,
+            cut_off=microberx_cutoff,
+            biosystem=microberx_biosystem,
+            max_rules=microberx_max_rules,
+        )
 
         for species in species_list:
             microberx_score = float(species_scores.get(species, 0.0))
@@ -256,6 +379,11 @@ def main():
     args = parse_args()
     taxonomy_df = load_consensus_taxonomy(args.consensus_taxonomy)
     drugs_df = load_drugs_with_smiles(args.drugs_with_smiles)
+    if drugs_df.empty:
+        print(
+            "WARNING: No drugs with non-empty SMILES after loading; writing header-only interactions TSV.",
+            file=sys.stderr,
+        )
     pathabundance_df = load_pathabundance_optional(args.pathabundance)
     if pathabundance_df is None:
         print(
@@ -271,6 +399,9 @@ def main():
         microberx_min_score=float(args.microberx_min_score),
         high_threshold=float(args.high_threshold),
         medium_threshold=float(args.medium_threshold),
+        microberx_cutoff=float(args.microberx_cutoff),
+        microberx_max_rules=int(args.microberx_max_rules),
+        microberx_biosystem=str(args.microberx_biosystem),
     )
     write_interactions_tsv(rows, args.output)
 

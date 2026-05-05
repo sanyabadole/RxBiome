@@ -8,9 +8,7 @@ process MICROBERX_PREDICT {
     'docker.io/sanyabadole/rxbiome-microberx:1.0' }"
 
     input:
-    tuple val(meta), path(consensus_taxonomy)
-    path drugs_with_smiles
-    tuple val(meta2), path(pathabundance)
+    tuple val(meta), path(consensus_taxonomy), path(drugs_with_smiles), path(pathabundance)
 
     output:
     tuple val(meta), path("*.drug_microbiome_interactions.tsv"), emit: interactions
@@ -24,6 +22,9 @@ process MICROBERX_PREDICT {
     def microberx_min_score = params.microberx_min_score ?: 0.3
     def high_threshold = params.interaction_high_threshold ?: 0.7
     def medium_threshold = params.interaction_medium_threshold ?: 0.4
+    def microberx_cutoff = params.microberx_cutoff != null ? params.microberx_cutoff : 0.45
+    def microberx_max_rules = params.microberx_max_rules != null ? params.microberx_max_rules : 400
+    def microberx_biosystem = params.microberx_biosystem ?: 'gutmicrobes'
     """
     microberx_predict.py \\
         --sample-id ${meta.id} \\
@@ -31,6 +32,9 @@ process MICROBERX_PREDICT {
         --drugs-with-smiles ${drugs_with_smiles} \\
         --pathabundance ${pathabundance} \\
         --microberx-min-score ${microberx_min_score} \\
+        --microberx-cutoff ${microberx_cutoff} \\
+        --microberx-max-rules ${microberx_max_rules} \\
+        --microberx-biosystem ${microberx_biosystem} \\
         --high-threshold ${high_threshold} \\
         --medium-threshold ${medium_threshold} \\
         --output ${prefix}.drug_microbiome_interactions.tsv

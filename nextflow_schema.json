@@ -47,8 +47,8 @@
                     "exists": true,
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
-                    "description": "Path to drug library CSV file with columns: drug_name, pubchem_cid, bioavailability_level, baseline_bioavailability",
-                    "help_text": "The drug library must be a comma-separated file with at minimum a drug_name column. pubchem_cid is strongly recommended for accurate database cross-referencing.",
+                    "description": "Path to drug library CSV for module 3 (columns: drug_name, drugbank_id, drug_class; optional smiles)",
+                    "help_text": "Comma-separated file with required columns drug_name, drugbank_id, and drug_class. Optional column smiles: if pre-filled, remote lookup is skipped for that row; otherwise `DRUG_SMILES_LOOKUP` resolves SMILES via DrugBank (with API key), PubChem, or ChEMBL. Output is written to `drugbank/drugs_with_smiles.tsv`.",
                     "fa_icon": "fas fa-pills"
                 },
                 "sequencing_type": {
@@ -101,7 +101,14 @@
                 "host_db": {
                     "type": "string",
                     "format": "directory-path",
-                    "description": "Host reference database directory for KneadData (Bowtie2 index). Required when skip_host_decontamination is false.",
+                    "description": "Directory that contains the host Bowtie2 index (*.bt2) for KneadData. Required when skip_host_decontamination is false. Do not pass only the index prefix; pass the folder (e.g. databases/kneaddata_human).",
+                    "help_text": "Nextflow stages this whole directory into each task so all hg37dec_v0.1.*.bt2 (or your index) files are available. Set --host_bowtie2_prefix to the Bowtie2 index basename without extensions (default hg37dec_v0.1).",
+                    "fa_icon": "fas fa-database"
+                },
+                "host_bowtie2_prefix": {
+                    "type": "string",
+                    "default": "hg37dec_v0.1",
+                    "description": "Bowtie2 index basename (no .bt2 suffix) inside host_db for KneadData --reference-db.",
                     "fa_icon": "fas fa-database"
                 },
                 "skip_host_decontamination": {
@@ -164,21 +171,21 @@
                 "humann3_nucleotide_db": {
                     "type": "string",
                     "format": "path",
-                    "description": "Path to the ChocoPhlAn nucleotide database directory for HUMANnN3.",
+                    "description": "Path to the ChocoPhlAn nucleotide database directory for HUMAnN3.",
                     "help_text": "Download with: humann_databases --download chocophlan full /path/to/db",
                     "fa_icon": "fas fa-database"
                 },
                 "humann3_protein_db": {
                     "type": "string",
                     "format": "path",
-                    "description": "Path to the UniRef90 protein database directory for HUMANnN3.",
+                    "description": "Path to the UniRef90 protein database directory for HUMAnN3.",
                     "help_text": "Download with: humann_databases --download uniref uniref90_diamond /path/to/db",
                     "fa_icon": "fas fa-database"
                 },
                 "drugbank_api_key": {
                     "type": "string",
                     "description": "DrugBank API key used to resolve SMILES by DrugBank ID.",
-                    "help_text": "Optional. If omitted, the pipeline keeps drugs but leaves SMILES empty and skips those drugs in MicrobeRX prediction.",
+                    "help_text": "Optional. If omitted, SMILES are resolved via PubChem and ChEMBL using drug_name (and rows with pre-filled smiles skip lookup).",
                     "fa_icon": "fas fa-key"
                 },
                 "microberx_min_score": {
@@ -186,6 +193,24 @@
                     "default": 0.3,
                     "description": "Minimum MicrobeRX score required to retain a species-drug prediction.",
                     "fa_icon": "fas fa-filter"
+                },
+                "microberx_cutoff": {
+                    "type": "number",
+                    "default": 0.45,
+                    "description": "MetabolitePredictor confidence cutoff (MicrobeRX sums three similarity terms per reaction).",
+                    "fa_icon": "fas fa-sliders-h"
+                },
+                "microberx_max_rules": {
+                    "type": "integer",
+                    "default": 400,
+                    "description": "Maximum reaction rules evaluated per drug (0 = full catalogue; full runs can take a long time).",
+                    "fa_icon": "fas fa-gauge-high"
+                },
+                "microberx_biosystem": {
+                    "type": "string",
+                    "default": "gutmicrobes",
+                    "description": "MicrobeRX biosystem filter passed to MetabolitePredictor: gutmicrobes, human, or all.",
+                    "fa_icon": "fas fa-bacteria"
                 },
                 "interaction_high_threshold": {
                     "type": "number",

@@ -14,39 +14,40 @@ workflow DRUG_MICROBIOME_INTERACTION {
     ch_consensus_taxonomy
     ch_pathabundance
     ch_drug_library_csv
-    val_drugbank_api_key
 
     main:
     ch_versions = Channel.empty()
 
     DRUG_SMILES_LOOKUP(
-        ch_drug_library_csv,
-        val_drugbank_api_key
+        ch_drug_library_csv
     )
     ch_versions = ch_versions.mix(DRUG_SMILES_LOOKUP.out.versions)
 
-    ch_pathabundance_opt = ch_pathabundance.ifEmpty([])
-    ch_pathabundance_fallback = ch_pathabundance_opt.ifEmpty(
-        ch_consensus_taxonomy.map { meta, consensus_taxonomy ->
-            [meta, file("$projectDir/assets/empty_pathabundance.tsv")]
+    // Avoid dual-consuming consensus channel: construct the final tuple in one pass when HUMAnN is skipped.
+    ch_consensus_pathabundance = (
+        !params.humann3_nucleotide_db || !params.humann3_protein_db
+    ) ? ch_consensus_taxonomy.map { meta, consensus_taxonomy ->
+            [meta, consensus_taxonomy, file("${projectDir}/assets/empty_pathabundance.tsv")]
         }
-    )
+      : ch_consensus_taxonomy
+            .join(ch_pathabundance, by: 0)
+            .map { meta, consensus_taxonomy, pathabundance ->
+                [meta, consensus_taxonomy, pathabundance]
+            }
 
-    ch_consensus_pathabundance = ch_consensus_taxonomy
-        .join(ch_pathabundance_fallback, by: 0)
-        .map { meta, consensus_taxonomy, pathabundance ->
-            [meta, consensus_taxonomy, pathabundance]
+    // Broadcast the single drugs TSV to every sample (queue channel would be consumed after one task).
+    ch_drugs_keyed = DRUG_SMILES_LOOKUP.out.drugs_with_smiles.map { drugs_tsv ->
+        tuple('rxbiome_drugs', drugs_tsv)
+    }
+    ch_samples_keyed = ch_consensus_pathabundance.map { meta, consensus_taxonomy, pathabundance ->
+        tuple('rxbiome_drugs', meta, consensus_taxonomy, pathabundance)
+    }
+    ch_microberx_in = ch_samples_keyed.join(ch_drugs_keyed, by: 0)
+        .map { _k, meta, consensus_taxonomy, pathabundance, drugs_tsv ->
+            tuple(meta, consensus_taxonomy, drugs_tsv, pathabundance)
         }
 
-    MICROBERX_PREDICT(
-        ch_consensus_pathabundance.map { meta, consensus_taxonomy, pathabundance ->
-            [meta, consensus_taxonomy]
-        },
-        DRUG_SMILES_LOOKUP.out.drugs_with_smiles,
-        ch_consensus_pathabundance.map { meta, consensus_taxonomy, pathabundance ->
-            [meta, pathabundance]
-        }
-    )
+    MICROBERX_PREDICT(ch_microberx_in)
     ch_versions = ch_versions.mix(MICROBERX_PREDICT.out.versions)
 
     emit:
