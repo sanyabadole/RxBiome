@@ -86,6 +86,10 @@ If `--drug_pk_metadata` is provided, drug-specific priors are merged into the re
   - `n_drugs`
   - mean and maximum absolute dose-change fraction
   - HIGH/MEDIUM/LOW PK risk counts per sample
+- `pk_report/cohort.drug_dose_change.svg` — bar chart of top drugs by absolute mean dose-change fraction.
+- `pk_report/cohort.sample_max_dose_change.svg` — bar chart of per-sample maximum absolute dose-change fraction.
+- `pk_report/cohort.pk_report.md` — markdown cohort report with top tables and embedded cohort plots.
+- `pk_report/cohort.drug_dose_change.report.svg` and `pk_report/cohort.sample_max_dose_change.report.svg` — copied plot assets colocated with the markdown report for portable sharing.
 
 </details>
 

@@ -145,6 +145,9 @@ workflow RXBIOME {
     cohort_pk_impact = PK_REPORTING.out.cohort_pk_impact
     cohort_drug_summary = PK_REPORTING.out.cohort_drug_summary
     cohort_sample_summary = PK_REPORTING.out.cohort_sample_summary
+    cohort_drug_plot = PK_REPORTING.out.cohort_drug_plot
+    cohort_sample_plot = PK_REPORTING.out.cohort_sample_plot
+    cohort_report_md = PK_REPORTING.out.cohort_report_md
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions = ch_versions // channel: [ path(versions.yml) ]
 
