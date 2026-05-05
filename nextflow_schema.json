@@ -51,6 +51,17 @@
                     "help_text": "Comma-separated file with required columns drug_name, drugbank_id, and drug_class. Optional column smiles: if pre-filled, remote lookup is skipped for that row; otherwise `DRUG_SMILES_LOOKUP` resolves SMILES via DrugBank (with API key), PubChem, or ChEMBL. Output is written to `drugbank/drugs_with_smiles.tsv`.",
                     "fa_icon": "fas fa-pills"
                 },
+                "drug_pk_metadata": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "schema": "assets/schema_drug_pk_metadata.json",
+                    "mimetype": "text/csv",
+                    "pattern": "^\\S+\\.csv$",
+                    "description": "Optional Module 4 drug PK metadata CSV (e.g., standard dose, target AUC, clearance route).",
+                    "help_text": "Used by Module 4 PK impact modelling. If omitted, Module 4 can fall back to interaction-only priors.",
+                    "fa_icon": "fas fa-table"
+                },
                 "sequencing_type": {
                     "type": "string",
                     "default": "wgs",
@@ -223,6 +234,24 @@
                     "default": 0.4,
                     "description": "Threshold for assigning MEDIUM interaction risk tier.",
                     "fa_icon": "fas fa-triangle-exclamation"
+                },
+                "pk_target_exposure_multiplier": {
+                    "type": "number",
+                    "default": 1.0,
+                    "description": "Module 4 target exposure multiplier (1.0 means maintain baseline exposure).",
+                    "fa_icon": "fas fa-bullseye"
+                },
+                "pk_max_dose_adjustment_fraction": {
+                    "type": "number",
+                    "default": 0.5,
+                    "description": "Maximum absolute dose adjustment fraction allowed by Module 4 recommender (e.g. 0.5 = +/-50%).",
+                    "fa_icon": "fas fa-sliders-h"
+                },
+                "pk_min_confidence_interval_width": {
+                    "type": "number",
+                    "default": 0.1,
+                    "description": "Minimum relative confidence interval width used by Module 4 uncertainty estimates.",
+                    "fa_icon": "fas fa-chart-line"
                 }
             }
         },

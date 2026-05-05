@@ -15,6 +15,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [QC and preprocessing](#qc-and-preprocessing) - Adapter trimming, optional host decontamination, and taxonomic profiling
 - [Functional profiling](#functional-profiling) - Optional HUMAnN3 gene and pathway abundances
 - [Drug–microbiome interactions](#drug-microbiome-interactions) - SMILES-enriched drug library and MicrobeRX-based scoring
+- [PK impact modelling](#pk-impact-modelling) - Deterministic exposure shift and dose-adjustment recommendations
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
@@ -47,6 +48,26 @@ If those parameters are omitted, this stage is skipped and module 3 uses a neutr
 
 - `drugbank/` — `drugs_with_smiles.tsv` produced from `--drugs` (prefilled or API-resolved SMILES).
 - `interactions/` — per-sample `*.drug_microbiome_interactions.tsv` with columns: sample, drug metadata, species, taxonomic confidence, MicrobeRX score, pathway coverage weight, combined interaction confidence, and risk tier.
+
+</details>
+
+### PK impact modelling
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `pk_impact/` — per-sample `*.pk_impact.tsv` with columns:
+  - identifiers (`sample_id`, `drug_name`, `drugbank_id`)
+  - baseline and recommendation (`standard_dose_mg`, `recommended_dose_mg`, `recommended_dose_change_fraction`)
+  - inferred PK shifts (`microbiome_impact_factor`, `predicted_clearance_multiplier`, `predicted_auc_multiplier`)
+  - uncertainty/tiering (`confidence_low`, `confidence_high`, `pk_risk_tier`)
+  - interpretability fields (`dominant_species`, `mechanistic_note`)
+- `pk_impact/` — per-sample reporting artifacts:
+  - `*.pk_summary.tsv` (single-row summary with risk counts and dose-change aggregates)
+  - `*.dose_change.svg` (absolute dose-adjustment magnitude by drug)
+  - `*.risk_tier_counts.svg` (HIGH/MEDIUM/LOW PK risk count bar chart)
+
+If `--drug_pk_metadata` is provided, drug-specific priors are merged into the recommendations. If omitted, the module uses a safe default dose prior.
 
 </details>
 

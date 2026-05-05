@@ -1,0 +1,47 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/nf-core/rxbiome/master/assets/schema_drug_pk_metadata.json",
+    "title": "rxbiome module 4 drug PK metadata schema",
+    "description": "Schema for optional module 4 drug PK metadata table.",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "drug_name": {
+                "type": "string",
+                "pattern": "^\\S.*$",
+                "errorMessage": "drug_name is required"
+            },
+            "drugbank_id": {
+                "type": "string",
+                "pattern": "^DB\\d{5}$",
+                "errorMessage": "drugbank_id should look like DB00331"
+            },
+            "standard_dose_mg": {
+                "type": "number",
+                "minimum": 0,
+                "errorMessage": "standard_dose_mg must be >= 0"
+            },
+            "target_auc": {
+                "type": "number",
+                "minimum": 0,
+                "errorMessage": "target_auc must be >= 0"
+            },
+            "bioavailability_fraction": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "errorMessage": "bioavailability_fraction must be between 0 and 1"
+            },
+            "clearance_route": {
+                "type": "string",
+                "enum": ["hepatic", "renal", "mixed", "other"]
+            },
+            "therapeutic_index": {
+                "type": "string",
+                "enum": ["narrow", "moderate", "wide"]
+            }
+        },
+        "required": ["drug_name", "drugbank_id"]
+    }
+}
