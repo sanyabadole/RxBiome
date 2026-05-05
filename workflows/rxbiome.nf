@@ -133,6 +133,9 @@ workflow RXBIOME {
     emit:
     interactions = DRUG_MICROBIOME_INTERACTION.out.interactions
     pk_impact = PK_IMPACT_MODELING.out.pk_impact
+    pk_summary = PK_IMPACT_MODELING.out.pk_summary
+    pk_dose_plot = PK_IMPACT_MODELING.out.dose_plot
+    pk_risk_plot = PK_IMPACT_MODELING.out.risk_plot
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions = ch_versions // channel: [ path(versions.yml) ]
 

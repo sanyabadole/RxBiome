@@ -52,6 +52,9 @@ workflow NFCORE_RXBIOME {
     emit:
     multiqc_report = RXBIOME.out.multiqc_report // channel: /path/to/multiqc_report.html
     pk_impact = RXBIOME.out.pk_impact
+    pk_summary = RXBIOME.out.pk_summary
+    pk_dose_plot = RXBIOME.out.pk_dose_plot
+    pk_risk_plot = RXBIOME.out.pk_risk_plot
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -98,6 +101,9 @@ workflow {
 
     emit:
     pk_impact = NFCORE_RXBIOME.out.pk_impact
+    pk_summary = NFCORE_RXBIOME.out.pk_summary
+    pk_dose_plot = NFCORE_RXBIOME.out.pk_dose_plot
+    pk_risk_plot = NFCORE_RXBIOME.out.pk_risk_plot
 }
 
 /*

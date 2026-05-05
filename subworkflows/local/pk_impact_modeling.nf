@@ -32,5 +32,8 @@ workflow PK_IMPACT_MODELING {
 
     emit:
     pk_impact = PK_IMPACT.out.pk_impact
+    pk_summary = PK_IMPACT.out.pk_summary
+    dose_plot = PK_IMPACT.out.dose_plot
+    risk_plot = PK_IMPACT.out.risk_plot
     versions = ch_versions
 }

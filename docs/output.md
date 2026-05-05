@@ -62,6 +62,10 @@ If those parameters are omitted, this stage is skipped and module 3 uses a neutr
   - inferred PK shifts (`microbiome_impact_factor`, `predicted_clearance_multiplier`, `predicted_auc_multiplier`)
   - uncertainty/tiering (`confidence_low`, `confidence_high`, `pk_risk_tier`)
   - interpretability fields (`dominant_species`, `mechanistic_note`)
+- `pk_impact/` — per-sample reporting artifacts:
+  - `*.pk_summary.tsv` (single-row summary with risk counts and dose-change aggregates)
+  - `*.dose_change.svg` (absolute dose-adjustment magnitude by drug)
+  - `*.risk_tier_counts.svg` (HIGH/MEDIUM/LOW PK risk count bar chart)
 
 If `--drug_pk_metadata` is provided, drug-specific priors are merged into the recommendations. If omitted, the module uses a safe default dose prior.
 
