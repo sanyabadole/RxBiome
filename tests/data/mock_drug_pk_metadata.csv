@@ -1,0 +1,3 @@
+drug_name,drugbank_id,standard_dose_mg,target_auc,bioavailability_fraction,clearance_route,therapeutic_index
+metformin,DB00331,500,1.0,0.55,renal,moderate
+aspirin,DB00945,325,1.0,0.68,hepatic,wide
