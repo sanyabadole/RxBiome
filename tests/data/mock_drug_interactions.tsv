@@ -1,0 +1,11 @@
+sample_id	drug_name	drugbank_id	drug_class	species	taxonomic_confidence	microberx_score	pathway_coverage_weight	interaction_confidence	risk_tier
+MOCK_SAMPLE	Metformin	DB00331	Antidiabetic	Bacteroides uniformis	HIGH	0.947607	80.3	76.092842	HIGH
+MOCK_SAMPLE	Simvastatin	DB00641	Statin	Bacteroides uniformis	HIGH	0.728203	80.3	58.474701	HIGH
+MOCK_SAMPLE	Lisinopril	DB00722	ACE inhibitor	Bacteroides uniformis	HIGH	0.468647	80.3	37.632354	HIGH
+MOCK_SAMPLE	Metformin	DB00331	Antidiabetic	Akkermansia muciniphila	MEDIUM	0.788047	40.2	15.839745	HIGH
+MOCK_SAMPLE	Simvastatin	DB00641	Statin	Akkermansia muciniphila	MEDIUM	0.31616	40.2	6.354816	HIGH
+MOCK_SAMPLE	Simvastatin	DB00641	Statin	Faecalibacterium prausnitzii	HIGH	0.460588	60.0	27.63528	HIGH
+MOCK_SAMPLE	Lisinopril	DB00722	ACE inhibitor	Faecalibacterium prausnitzii	HIGH	0.69351	60.0	41.6106	HIGH
+MOCK_SAMPLE	Metformin	DB00331	Antidiabetic	Clostridium perfringens	MEDIUM	0.603513	35.0	10.561477	HIGH
+MOCK_SAMPLE	Simvastatin	DB00641	Statin	Clostridium perfringens	MEDIUM	0.354204	35.0	6.19857	HIGH
+MOCK_SAMPLE	Lisinopril	DB00722	ACE inhibitor	Clostridium perfringens	MEDIUM	0.415759	35.0	7.275783	HIGH

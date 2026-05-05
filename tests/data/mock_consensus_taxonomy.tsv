@@ -1,0 +1,6 @@
+species	bracken_fraction	new_est_reads	metaphlan_abundance	confidence	final_abundance
+Bacteroides uniformis	0.125	1200	4.22	HIGH	4.22
+Akkermansia muciniphila	0.085	850	2.10	MEDIUM	2.10
+Faecalibacterium prausnitzii	0.062	620	1.75	HIGH	1.75
+Clostridium perfringens	0.011	110	0.35	MEDIUM	0.35
+Escherichia coli	0.003	30	0.00	LOW	0.30

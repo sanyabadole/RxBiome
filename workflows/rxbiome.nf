@@ -10,6 +10,7 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_rxbiome_pipeline'
 include { QC_PREPROCESSING       } from '../subworkflows/local/qc_preprocessing'
 include { FUNCTIONAL_PROFILING   } from '../subworkflows/local/functional_profiling'
+include { DRUG_MICROBIOME_INTERACTION } from '../subworkflows/local/drug_microbiome_interaction'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -40,6 +41,14 @@ workflow RXBIOME {
         QC_PREPROCESSING.out.metaphlan_profile
     )
     ch_versions = ch_versions.mix(FUNCTIONAL_PROFILING.out.versions)
+
+    DRUG_MICROBIOME_INTERACTION(
+        QC_PREPROCESSING.out.consensus_taxonomy,
+        FUNCTIONAL_PROFILING.out.pathabundance,
+        Channel.fromPath(params.drugs, checkIfExists: true),
+        params.drugbank_api_key ?: ''
+    )
+    ch_versions = ch_versions.mix(DRUG_MICROBIOME_INTERACTION.out.versions)
 
     //
     // Collate and save software versions
@@ -111,8 +120,10 @@ workflow RXBIOME {
         []
     )
 
-    emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
-    versions       = ch_versions                 // channel: [ path(versions.yml) ]
+    emit:
+    interactions = DRUG_MICROBIOME_INTERACTION.out.interactions
+    multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    versions = ch_versions // channel: [ path(versions.yml) ]
 
 }
 

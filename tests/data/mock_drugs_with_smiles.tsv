@@ -1,0 +1,3 @@
+drug_name	drugbank_id	drug_class	smiles
+metformin	DB00331	Biguanide	CN(C)C(=N)NC(=N)N
+aspirin	DB00945	Salicylate	CC(=O)Oc1ccccc1C(=O)O
