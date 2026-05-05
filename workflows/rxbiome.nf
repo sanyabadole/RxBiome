@@ -11,6 +11,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_rxbi
 include { QC_PREPROCESSING       } from '../subworkflows/local/qc_preprocessing'
 include { FUNCTIONAL_PROFILING   } from '../subworkflows/local/functional_profiling'
 include { DRUG_MICROBIOME_INTERACTION } from '../subworkflows/local/drug_microbiome_interaction'
+include { PK_IMPACT_MODELING } from '../subworkflows/local/pk_impact_modeling'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,6 +49,16 @@ workflow RXBIOME {
         Channel.fromPath(params.drugs, checkIfExists: true)
     )
     ch_versions = ch_versions.mix(DRUG_MICROBIOME_INTERACTION.out.versions)
+
+    ch_drug_pk_metadata = params.drug_pk_metadata ?
+        Channel.fromPath(params.drug_pk_metadata, checkIfExists: true) :
+        Channel.fromPath("${projectDir}/assets/empty_drug_pk_metadata.csv", checkIfExists: true)
+
+    PK_IMPACT_MODELING(
+        DRUG_MICROBIOME_INTERACTION.out.interactions,
+        ch_drug_pk_metadata
+    )
+    ch_versions = ch_versions.mix(PK_IMPACT_MODELING.out.versions)
 
     //
     // Collate and save software versions
@@ -121,6 +132,7 @@ workflow RXBIOME {
 
     emit:
     interactions = DRUG_MICROBIOME_INTERACTION.out.interactions
+    pk_impact = PK_IMPACT_MODELING.out.pk_impact
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions = ch_versions // channel: [ path(versions.yml) ]
 

@@ -27,6 +27,8 @@ Notes:
 
 **rxbiome** currently runs **fastp** trimming, optional **KneadData** host removal (requires `--host_db`), **Kraken2** classification, **Bracken**, **MetaPhlAn** profiling and taxonomic consensus, optional **HUMAnN3** functional profiling (when DB paths are set), and **drug–microbiome interaction** scoring from `--drugs` plus **MicrobeRX** (with deterministic fallback if the library is unavailable). Use `-profile test` for CI-style runs with stubs; for real data provide paths to **Kraken2** and **MetaPhlAn** databases (`--kraken2_db`, `--metaphlan4_db`) and a valid **MetaPhlAn** index basename (`--metaphlan4_index`) matching files on disk. See parameter help (`--help`) and `nextflow_schema.json` for the full list.
 
+Module 4 (PK impact modelling) runs after Module 3 and emits per-sample dose-adjustment recommendations. Optionally provide `--drug_pk_metadata` (CSV conforming to `assets/schema_drug_pk_metadata.json`) to inject drug-specific priors such as `standard_dose_mg`.
+
 ## Samplesheet input
 
 You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.

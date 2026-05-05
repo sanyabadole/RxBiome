@@ -51,6 +51,7 @@ workflow NFCORE_RXBIOME {
     )
     emit:
     multiqc_report = RXBIOME.out.multiqc_report // channel: /path/to/multiqc_report.html
+    pk_impact = RXBIOME.out.pk_impact
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -94,6 +95,9 @@ workflow {
         params.hook_url,
         NFCORE_RXBIOME.out.multiqc_report
     )
+
+    emit:
+    pk_impact = NFCORE_RXBIOME.out.pk_impact
 }
 
 /*

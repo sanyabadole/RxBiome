@@ -54,7 +54,7 @@
                 "drug_pk_metadata": {
                     "type": "string",
                     "format": "file-path",
-                    "exists": false,
+                    "exists": true,
                     "schema": "assets/schema_drug_pk_metadata.json",
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
@@ -246,6 +246,12 @@
                     "default": 0.5,
                     "description": "Maximum absolute dose adjustment fraction allowed by Module 4 recommender (e.g. 0.5 = +/-50%).",
                     "fa_icon": "fas fa-sliders-h"
+                },
+                "pk_min_confidence_interval_width": {
+                    "type": "number",
+                    "default": 0.1,
+                    "description": "Minimum relative confidence interval width used by Module 4 uncertainty estimates.",
+                    "fa_icon": "fas fa-chart-line"
                 }
             }
         },
