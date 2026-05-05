@@ -55,6 +55,9 @@ workflow NFCORE_RXBIOME {
     pk_summary = RXBIOME.out.pk_summary
     pk_dose_plot = RXBIOME.out.pk_dose_plot
     pk_risk_plot = RXBIOME.out.pk_risk_plot
+    cohort_pk_impact = RXBIOME.out.cohort_pk_impact
+    cohort_drug_summary = RXBIOME.out.cohort_drug_summary
+    cohort_sample_summary = RXBIOME.out.cohort_sample_summary
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -104,6 +107,9 @@ workflow {
     pk_summary = NFCORE_RXBIOME.out.pk_summary
     pk_dose_plot = NFCORE_RXBIOME.out.pk_dose_plot
     pk_risk_plot = NFCORE_RXBIOME.out.pk_risk_plot
+    cohort_pk_impact = NFCORE_RXBIOME.out.cohort_pk_impact
+    cohort_drug_summary = NFCORE_RXBIOME.out.cohort_drug_summary
+    cohort_sample_summary = NFCORE_RXBIOME.out.cohort_sample_summary
 }
 
 /*

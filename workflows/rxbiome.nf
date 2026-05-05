@@ -12,6 +12,7 @@ include { QC_PREPROCESSING       } from '../subworkflows/local/qc_preprocessing'
 include { FUNCTIONAL_PROFILING   } from '../subworkflows/local/functional_profiling'
 include { DRUG_MICROBIOME_INTERACTION } from '../subworkflows/local/drug_microbiome_interaction'
 include { PK_IMPACT_MODELING } from '../subworkflows/local/pk_impact_modeling'
+include { PK_REPORTING } from '../subworkflows/local/pk_reporting'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,6 +60,11 @@ workflow RXBIOME {
         ch_drug_pk_metadata
     )
     ch_versions = ch_versions.mix(PK_IMPACT_MODELING.out.versions)
+
+    PK_REPORTING(
+        PK_IMPACT_MODELING.out.pk_impact
+    )
+    ch_versions = ch_versions.mix(PK_REPORTING.out.versions)
 
     //
     // Collate and save software versions
@@ -136,6 +142,9 @@ workflow RXBIOME {
     pk_summary = PK_IMPACT_MODELING.out.pk_summary
     pk_dose_plot = PK_IMPACT_MODELING.out.dose_plot
     pk_risk_plot = PK_IMPACT_MODELING.out.risk_plot
+    cohort_pk_impact = PK_REPORTING.out.cohort_pk_impact
+    cohort_drug_summary = PK_REPORTING.out.cohort_drug_summary
+    cohort_sample_summary = PK_REPORTING.out.cohort_sample_summary
     multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions = ch_versions // channel: [ path(versions.yml) ]
 

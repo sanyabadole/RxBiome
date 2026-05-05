@@ -16,6 +16,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [Functional profiling](#functional-profiling) - Optional HUMAnN3 gene and pathway abundances
 - [Drug–microbiome interactions](#drug-microbiome-interactions) - SMILES-enriched drug library and MicrobeRX-based scoring
 - [PK impact modelling](#pk-impact-modelling) - Deterministic exposure shift and dose-adjustment recommendations
+- [PK reporting (cohort)](#pk-reporting-cohort) - Cohort-level aggregation tables for downstream reporting
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
@@ -68,6 +69,23 @@ If those parameters are omitted, this stage is skipped and module 3 uses a neutr
   - `*.risk_tier_counts.svg` (HIGH/MEDIUM/LOW PK risk count bar chart)
 
 If `--drug_pk_metadata` is provided, drug-specific priors are merged into the recommendations. If omitted, the module uses a safe default dose prior.
+
+</details>
+
+### PK reporting (cohort)
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `pk_report/cohort.pk_impact.tsv` — concatenated per-sample PK impact rows from Module 4.
+- `pk_report/cohort.drug_summary.tsv` — drug-level cohort metrics:
+  - sample coverage (`n_samples`)
+  - mean dose-change and mean AUC multiplier
+  - HIGH/MEDIUM/LOW PK risk counts per drug
+- `pk_report/cohort.sample_summary.tsv` — sample-level cohort metrics:
+  - `n_drugs`
+  - mean and maximum absolute dose-change fraction
+  - HIGH/MEDIUM/LOW PK risk counts per sample
 
 </details>
 
