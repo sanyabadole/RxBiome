@@ -46,14 +46,23 @@ workflow QC_PREPROCESSING {
         log.warn '[rxbiome] skip_host_decontamination=true — skipping KNEADDATA; using FASTP-trimmed reads downstream.'
         ch_clean_reads = FASTP.out.reads
     } else if (!params.host_db) {
-        error("[rxbiome] KneadData requires --host_db (Bowtie2 host reference). " +
-            "Download/build a KneadData-compatible host DB, or re-run with --skip_host_decontamination true " +
-            "(not recommended for real WGS host removal).")
+        error("[rxbiome] KneadData requires --host_db: a directory containing host Bowtie2 index files (*.bt2), " +
+            "plus matching --host_bowtie2_prefix (default hg37dec_v0.1). " +
+            "Or re-run with --skip_host_decontamination true (no host removal).")
     } else {
-        KNEADDATA (
-            FASTP.out.reads,
-            channel.value(file(params.host_db))
-        )
+        // Stage every Bowtie2 piece (*.bt2); avoids path(type:'dir') which breaks on some Nextflow versions.
+        ch_host_bt2 = channel.fromPath(
+            "${file(params.host_db)}/${params.host_bowtie2_prefix}*.bt2",
+            checkIfExists: true
+        ).collect()
+        // combine + collect() flattens paths; arity path input needs [meta, reads, List<Path>]
+        ch_kneaddata_in = FASTP.out.reads
+            .combine(ch_host_bt2)
+            .map { row ->
+                def L = row instanceof List ? row : [row]
+                tuple(L[0], L[1], L.subList(2, L.size()))
+            }
+        KNEADDATA(ch_kneaddata_in)
         ch_clean_reads = KNEADDATA.out.reads
         ch_multiqc_files = ch_multiqc_files.mix(KNEADDATA.out.log.map { meta, f -> f })
     }
@@ -103,7 +112,9 @@ workflow QC_PREPROCESSING {
     )
     ch_versions = ch_versions.mix(METAPHLAN4.out.versions)
 
-    ch_bracken_for_consensus = BRACKEN_BRACKEN.out.txt
+    // Bracken emits *.tsv (species abundances) on `reports` and Kraken-style *.kraken2.report_bracken.txt on `txt`.
+    // taxonomic_consensus.py requires the TSV columns (name, taxonomy_lvl, …), not the kraken-style report.
+    ch_bracken_for_consensus = BRACKEN_BRACKEN.out.reports
     ch_metaphlan_for_consensus = METAPHLAN4.out.profile
     // join on sample key so each sample's Bracken + MetaPhlAn outputs are paired
     ch_consensus_input = ch_bracken_for_consensus.join(ch_metaphlan_for_consensus, by: 0)
