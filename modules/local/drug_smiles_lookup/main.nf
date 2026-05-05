@@ -8,8 +8,7 @@ process DRUG_SMILES_LOOKUP {
     'biocontainers/pandas:2.2.1' }"
 
     input:
-    path drug_library_csv
-    val api_key
+    path drug_library
 
     output:
     path "drugs_with_smiles.tsv", emit: drugs_with_smiles
@@ -21,8 +20,8 @@ process DRUG_SMILES_LOOKUP {
     script:
     """
     drug_smiles_lookup.py \\
-        --drug-library ${drug_library_csv} \\
-        --api-key "${api_key ?: ''}" \\
+        --drug-library ${drug_library} \\
+        --api-key "${task.ext.api_key ?: ''}" \\
         --output drugs_with_smiles.tsv
 
     cat <<-END_VERSIONS > versions.yml
@@ -36,7 +35,7 @@ process DRUG_SMILES_LOOKUP {
     """
     python - <<'PY'
     import csv
-    with open("${drug_library_csv}", "r", encoding="utf-8", newline="") as inp, open("drugs_with_smiles.tsv", "w", encoding="utf-8", newline="") as out:
+    with open("${drug_library}", "r", encoding="utf-8", newline="") as inp, open("drugs_with_smiles.tsv", "w", encoding="utf-8", newline="") as out:
         r = csv.DictReader(inp)
         w = csv.DictWriter(out, fieldnames=["drug_name", "drugbank_id", "drug_class", "smiles"], delimiter="\\t")
         w.writeheader()
@@ -45,7 +44,7 @@ process DRUG_SMILES_LOOKUP {
                 "drug_name": row.get("drug_name", ""),
                 "drugbank_id": row.get("drugbank_id", ""),
                 "drug_class": row.get("drug_class", ""),
-                "smiles": ""
+                "smiles": (row.get("smiles") or "").strip(),
             })
     PY
 

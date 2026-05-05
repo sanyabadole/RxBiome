@@ -45,8 +45,7 @@ workflow RXBIOME {
     DRUG_MICROBIOME_INTERACTION(
         QC_PREPROCESSING.out.consensus_taxonomy,
         FUNCTIONAL_PROFILING.out.pathabundance,
-        Channel.fromPath(params.drugs, checkIfExists: true),
-        params.drugbank_api_key ?: ''
+        Channel.fromPath(params.drugs, checkIfExists: true)
     )
     ch_versions = ch_versions.mix(DRUG_MICROBIOME_INTERACTION.out.versions)
 

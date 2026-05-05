@@ -1,3 +1,22 @@
+## Pre-resolving SMILES
+
+Pipeline containers used for processing do not have outbound internet access in some environments.
+Because of this, resolve SMILES once locally before running the pipeline with a new drug library.
+
+Run:
+
+```bash
+python bin/drug_smiles_lookup.py \
+  --drug-library my_drugs.csv \
+  --api-key "" \
+  --output my_drugs.csv
+```
+
+Notes:
+
+- Existing `smiles` values are preserved and never overwritten.
+- Rows with pre-filled `smiles` are skipped from remote lookup.
+- If all rows are already pre-filled, the script logs `All SMILES pre-filled — skipping API lookup.` and writes the file directly.
 # nf-core/rxbiome: Usage
 
 ## :warning: Please read this documentation on the nf-core website: [https://nf-co.re/rxbiome/usage](https://nf-co.re/rxbiome/usage)
@@ -6,7 +25,7 @@
 
 ## Introduction
 
-**rxbiome** currently runs **fastp** trimming, optional **KneadData** host removal (requires `--host_db`), **Kraken2** classification, and **MetaPhlAn** profiling. Use `-profile test` for CI-style runs with stubs; for real data provide paths to **Kraken2** and **MetaPhlAn** databases (`--kraken2_db`, `--metaphlan4_db`) and a valid **MetaPhlAn** index basename (`--metaphlan4_index`) matching files on disk. See parameter help (`--help`) and `nextflow_schema.json` for the full list.
+**rxbiome** currently runs **fastp** trimming, optional **KneadData** host removal (requires `--host_db`), **Kraken2** classification, **Bracken**, **MetaPhlAn** profiling and taxonomic consensus, optional **HUMAnN3** functional profiling (when DB paths are set), and **drug–microbiome interaction** scoring from `--drugs` plus **MicrobeRX** (with deterministic fallback if the library is unavailable). Use `-profile test` for CI-style runs with stubs; for real data provide paths to **Kraken2** and **MetaPhlAn** databases (`--kraken2_db`, `--metaphlan4_db`) and a valid **MetaPhlAn** index basename (`--metaphlan4_index`) matching files on disk. See parameter help (`--help`) and `nextflow_schema.json` for the full list.
 
 ## Samplesheet input
 

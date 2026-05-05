@@ -19,6 +19,11 @@ def parse_args():
     )
     parser.add_argument("--drug-library", required=True, help="Input drug library CSV path")
     parser.add_argument("--api-key", default="", help="DrugBank API key (optional)")
+    parser.add_argument(
+        "--skip-lookup",
+        action="store_true",
+        help="Skip all remote lookups and only normalize/write existing rows.",
+    )
     parser.add_argument("--output", required=True, help="Output TSV with SMILES")
     return parser.parse_args()
 
@@ -37,6 +42,7 @@ def read_drug_library(path):
                     "drug_name": (row.get("drug_name") or "").strip(),
                     "drugbank_id": (row.get("drugbank_id") or "").strip(),
                     "drug_class": (row.get("drug_class") or "").strip(),
+                    "smiles": (row.get("smiles") or "").strip(),
                 }
             )
     return rows
@@ -145,15 +151,32 @@ def enrich_drugs_with_smiles(rows, api_key):
 
     enriched = []
     for idx, row in enumerate(rows):
-        smiles = ""
+        drug_name = row["drug_name"]
+        drugbank_id = row["drugbank_id"]
+        smiles = row.get("smiles", "").strip()
+        if smiles:
+            print(f"[prefilled] {drug_name} ({drugbank_id})", file=sys.stderr)
+            enriched.append({**row, "smiles": smiles})
+            continue
         if use_drugbank:
-            smiles = fetch_smiles_from_drugbank(row["drugbank_id"], api_key)
+            smiles = fetch_smiles_from_drugbank(drugbank_id, api_key)
             if idx < len(rows) - 1:
                 time.sleep(1.0)
+            if smiles:
+                print(f"[drugbank] {drug_name} ({drugbank_id})", file=sys.stderr)
         if not smiles:
-            smiles = fetch_smiles_from_pubchem(row["drug_name"])
+            smiles = fetch_smiles_from_pubchem(drug_name)
+            if smiles:
+                print(f"[pubchem] {drug_name} ({drugbank_id})", file=sys.stderr)
         if not smiles:
-            smiles = fetch_smiles_from_chembl(row["drug_name"])
+            smiles = fetch_smiles_from_chembl(drug_name)
+            if smiles:
+                print(f"[chembl] {drug_name} ({drugbank_id})", file=sys.stderr)
+        if not smiles:
+            print(
+                f"WARNING: No SMILES resolved for {drug_name} ({drugbank_id})",
+                file=sys.stderr,
+            )
         enriched.append({**row, "smiles": smiles})
     return enriched
 
@@ -169,6 +192,15 @@ def write_output_tsv(rows, out_path):
 def main():
     args = parse_args()
     rows = read_drug_library(args.drug_library)
+    all_prefilled = bool(rows) and all(row.get("smiles", "").strip() for row in rows)
+    if all_prefilled:
+        print("All SMILES pre-filled — skipping API lookup.", file=sys.stderr)
+        write_output_tsv(rows, args.output)
+        return
+    if args.skip_lookup:
+        print("--skip-lookup enabled; writing input rows without API lookup.", file=sys.stderr)
+        write_output_tsv(rows, args.output)
+        return
     enriched = enrich_drugs_with_smiles(rows, args.api_key)
     write_output_tsv(enriched, args.output)
 
