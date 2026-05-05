@@ -1,0 +1,9 @@
+sample_id	drug_name	drugbank_id	drug_class	species	taxonomic_confidence	microberx_score	pathway_coverage_weight	interaction_confidence	risk_tier
+SAMPLE_A	metformin	DB00331	Biguanide	Bacteroides uniformis	HIGH	0.92	1.0	0.46	MEDIUM
+SAMPLE_A	metformin	DB00331	Biguanide	Faecalibacterium prausnitzii	MEDIUM	0.58	1.0	0.29	LOW
+SAMPLE_A	aspirin	DB00945	Salicylate	Parabacteroides distasonis	MEDIUM	0.81	1.0	0.41	MEDIUM
+SAMPLE_A	aspirin	DB00945	Salicylate	Roseburia intestinalis	MEDIUM	0.56	1.0	0.28	LOW
+SAMPLE_B	metformin	DB00331	Biguanide	Phocaeicola vulgatus	MEDIUM	0.78	1.0	0.39	LOW
+SAMPLE_B	metformin	DB00331	Biguanide	Agathobacter rectalis	MEDIUM	0.48	1.0	0.24	LOW
+SAMPLE_B	aspirin	DB00945	Salicylate	Collinsella aerofaciens	MEDIUM	0.93	1.0	0.47	MEDIUM
+SAMPLE_B	aspirin	DB00945	Salicylate	Blautia wexlerae	MEDIUM	0.62	1.0	0.31	LOW

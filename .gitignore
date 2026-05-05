@@ -56,3 +56,4 @@ tests/data/SRR341725_*.fastq.gz
 
 
 tests/data/consensus_output.tsv
+tests/data/pk_impact_test_outputs/
