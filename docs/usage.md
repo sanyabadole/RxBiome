@@ -43,12 +43,19 @@ The `sample` identifiers have to be the same when you have re-sequenced the same
 
 ```csv title="samplesheet.csv"
 sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
+CONTROL_REP1,raw_data/AEG588A1_S1_L002_R1_001.fastq.gz,raw_data/AEG588A1_S1_L002_R2_001.fastq.gz
+CONTROL_REP1,raw_data/AEG588A1_S1_L003_R1_001.fastq.gz,raw_data/AEG588A1_S1_L003_R2_001.fastq.gz
+CONTROL_REP1,raw_data/AEG588A1_S1_L004_R1_001.fastq.gz,raw_data/AEG588A1_S1_L004_R2_001.fastq.gz
 ```
 
 ### Full samplesheet
+
+Place your FASTQ files in a `raw_data/` folder inside the pipeline directory, then use relative paths in the samplesheet. This ensures the samplesheet is portable across machines.
+
+```bash
+mkdir -p raw_data
+cp /path/to/your/sequencing/*.fastq.gz raw_data/
+```
 
 The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
 
@@ -56,20 +63,20 @@ A final samplesheet file consisting of both single- and paired-end data may look
 
 ```csv title="samplesheet.csv"
 sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
-CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
-TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
-TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
+CONTROL_REP1,raw_data/AEG588A1_S1_L002_R1_001.fastq.gz,raw_data/AEG588A1_S1_L002_R2_001.fastq.gz
+CONTROL_REP2,raw_data/AEG588A2_S2_L002_R1_001.fastq.gz,raw_data/AEG588A2_S2_L002_R2_001.fastq.gz
+CONTROL_REP3,raw_data/AEG588A3_S3_L002_R1_001.fastq.gz,raw_data/AEG588A3_S3_L002_R2_001.fastq.gz
+TREATMENT_REP1,raw_data/AEG588A4_S4_L003_R1_001.fastq.gz,
+TREATMENT_REP2,raw_data/AEG588A5_S5_L003_R1_001.fastq.gz,
+TREATMENT_REP3,raw_data/AEG588A6_S6_L003_R1_001.fastq.gz,
+TREATMENT_REP3,raw_data/AEG588A6_S6_L004_R1_001.fastq.gz,
 ```
 
 | Column    | Description                                                                                                                                                                            |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| `fastq_1` | Path to FastQ file for Illumina short reads 1 (relative to launch directory or absolute). File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                      |
+| `fastq_2` | Path to FastQ file for Illumina short reads 2 (relative to launch directory or absolute). Leave empty for single-end data.                                                             |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 

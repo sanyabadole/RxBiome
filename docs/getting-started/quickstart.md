@@ -2,15 +2,24 @@
 
 This page walks through a real end-to-end run with two paired-end gut metagenome samples (SRR413665, SRR413666) and a 12-drug cardiometabolic panel.
 
-## Step 1 — Create a Samplesheet
+## Step 1 — Place Your Raw Data and Create a Samplesheet
+
+Copy your FASTQ files into a `raw_data/` folder inside the pipeline directory, then create the samplesheet using relative paths:
 
 ```bash
+mkdir -p raw_data
+cp /path/to/your/sequencing/SRR413665*.fastq.gz raw_data/
+cp /path/to/your/sequencing/SRR413666*.fastq.gz raw_data/
+
 cat > samplesheet.csv << 'EOF'
 sample,fastq_1,fastq_2
-SRR413665,/data/SRR413665_1.fastq.gz,/data/SRR413665_2.fastq.gz
-SRR413666,/data/SRR413666_1.fastq.gz,/data/SRR413666_2.fastq.gz
+SRR413665,raw_data/SRR413665_1.fastq.gz,raw_data/SRR413665_2.fastq.gz
+SRR413666,raw_data/SRR413666_1.fastq.gz,raw_data/SRR413666_2.fastq.gz
 EOF
 ```
+
+!!! tip
+    Always run `nextflow run` from the `rxbiome/` directory so that `raw_data/` relative paths resolve correctly on any machine.
 
 ## Step 2 — Create a Drug Library
 
