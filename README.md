@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/rxbiome_logo.png" alt="RxBiome Logo" width="220"/>
+</p>
+
 # RxBiome
 
 **Reproducible pharmacomicrobiomics — from gut metagenome to personalised dose adjustment**

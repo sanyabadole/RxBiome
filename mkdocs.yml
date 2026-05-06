@@ -8,8 +8,8 @@ edit_uri: edit/dev/docs/
 
 theme:
   name: material
-  logo: assets/rxbiome_logo.png
-  favicon: assets/rxbiome_logo.png
+  logo: images/rxbiome_logo.png
+  favicon: images/rxbiome_logo.png
   font:
     text: Inter
     code: JetBrains Mono

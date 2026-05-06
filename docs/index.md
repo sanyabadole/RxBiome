@@ -1,6 +1,9 @@
 <div class="rxb-hero" markdown>
 
-# RxBiome
+<div class="rxb-hero-title">
+  <img src="images/rxbiome_logo.png" alt="RxBiome Logo" class="rxb-hero-logo"/>
+  <span class="rxb-hero-name">RxBiome</span>
+</div>
 
 **Reproducible pharmacomicrobiomics — from gut metagenome to personalised dose adjustment**
 
@@ -76,8 +79,8 @@ flowchart LR
       -profile local,docker \
       --input samplesheet.csv \
       --drugs drug_library.csv \
-      --kraken2_db /path/to/databases/kraken2 \
-      --metaphlan4_db /path/to/databases/metaphlan \
+      --kraken2_db databases/kraken2 \
+      --metaphlan4_db databases/metaphlan \
       --metaphlan4_index mpa_vJan25_CHOCOPhlAnSGB_202503 \
       --skip_host_decontamination true \
       --outdir results/
@@ -90,8 +93,8 @@ flowchart LR
       -profile conda \
       --input samplesheet.csv \
       --drugs drug_library.csv \
-      --kraken2_db /path/to/databases/kraken2 \
-      --metaphlan4_db /path/to/databases/metaphlan \
+      --kraken2_db databases/kraken2 \
+      --metaphlan4_db databases/metaphlan \
       --metaphlan4_index mpa_vJan25_CHOCOPhlAnSGB_202503 \
       --skip_host_decontamination true \
       --outdir results/

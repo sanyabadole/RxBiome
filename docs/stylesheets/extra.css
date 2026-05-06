@@ -1,9 +1,42 @@
 /* RxBiome — custom MkDocs Material overrides */
 
+/* Circular logo in the top navbar */
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  border-radius: 50%;
+  object-fit: cover;
+  width: 48px;
+  height: 48px;
+}
+
 :root {
   --rxb-purple: #6a0dad;
   --rxb-teal: #009688;
   --rxb-light-bg: #f8f5ff;
+}
+
+.rxb-hero-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.rxb-hero-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.35);
+}
+
+.rxb-hero-name {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
 }
 
 /* Hero banner on home page */
