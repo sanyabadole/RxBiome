@@ -28,10 +28,23 @@ def parse_args():
     return parser.parse_args()
 
 
+def _detect_delimiter(path: Path) -> str:
+    """TSV and CSV are both accepted; pre-resolve output is tab-separated."""
+    try:
+        first = path.read_text(encoding="utf-8").splitlines()[0]
+    except (OSError, UnicodeDecodeError):
+        return ","
+    if "\t" in first and first.count("\t") >= first.count(","):
+        return "\t"
+    return ","
+
+
 def read_drug_library(path):
     rows = []
-    with Path(path).open("r", encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle)
+    path_obj = Path(path)
+    delimiter = _detect_delimiter(path_obj)
+    with path_obj.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter=delimiter)
         required = {"drug_name", "drugbank_id", "drug_class"}
         missing = required.difference(reader.fieldnames or [])
         if missing:

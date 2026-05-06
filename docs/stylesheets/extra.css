@@ -1,0 +1,115 @@
+/* RxBiome — custom MkDocs Material overrides */
+
+:root {
+  --rxb-purple: #6a0dad;
+  --rxb-teal: #009688;
+  --rxb-light-bg: #f8f5ff;
+}
+
+/* Hero banner on home page */
+.rxb-hero {
+  background: linear-gradient(135deg, #4a148c 0%, #006064 100%);
+  color: #fff;
+  padding: 4rem 2rem 3rem;
+  text-align: center;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.rxb-hero h1 {
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  color: #fff !important;
+}
+
+.rxb-hero p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  max-width: 700px;
+  margin: 0 auto 1.5rem;
+}
+
+.rxb-hero .btn-row {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.rxb-btn {
+  display: inline-block;
+  padding: 0.65rem 1.6rem;
+  border-radius: 4px;
+  font-weight: 600;
+  text-decoration: none !important;
+  font-size: 0.95rem;
+  transition: opacity 0.15s;
+}
+
+.rxb-btn:hover { opacity: 0.85; }
+
+.rxb-btn-primary {
+  background: #fff;
+  color: #4a148c !important;
+}
+
+.rxb-btn-secondary {
+  background: rgba(255,255,255,0.15);
+  color: #fff !important;
+  border: 2px solid rgba(255,255,255,0.5);
+}
+
+/* Feature grid */
+.rxb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.2rem;
+  margin: 1.5rem 0;
+}
+
+.rxb-card {
+  background: var(--rxb-light-bg);
+  border-left: 4px solid var(--rxb-purple);
+  border-radius: 6px;
+  padding: 1.2rem 1.4rem;
+}
+
+[data-md-color-scheme="slate"] .rxb-card {
+  background: rgba(255,255,255,0.05);
+  border-left-color: #ce93d8;
+}
+
+[data-md-color-scheme="slate"] .rxb-hero {
+  background: linear-gradient(135deg, #1a0030 0%, #003340 100%);
+}
+
+.rxb-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.rxb-card p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* Pipeline step badges */
+.step-badge {
+  display: inline-block;
+  background: var(--rxb-purple);
+  color: #fff;
+  border-radius: 12px;
+  padding: 0.1rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  vertical-align: middle;
+  margin-right: 0.4rem;
+}
+
+/* Wider content on large screens */
+@media screen and (min-width: 1200px) {
+  .md-content { max-width: 900px; }
+}

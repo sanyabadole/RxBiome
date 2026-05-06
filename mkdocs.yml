@@ -1,0 +1,122 @@
+site_name: RxBiome
+site_url: https://sanyabadole.github.io/RxBiome/
+site_description: Reproducible Nextflow pipeline for pharmacomicrobiomics — linking gut microbiome composition to drug pharmacokinetics.
+site_author: Sanya Badole
+repo_name: sanyabadole/RxBiome
+repo_url: https://github.com/sanyabadole/RxBiome
+edit_uri: edit/dev/docs/
+
+theme:
+  name: material
+  logo: assets/rxbiome_logo.png
+  favicon: assets/rxbiome_logo.png
+  font:
+    text: Inter
+    code: JetBrains Mono
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.integrate
+    - toc.follow
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - getting-started/index.md
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Samplesheet: getting-started/samplesheet.md
+    - Drug Library: getting-started/drug-library.md
+    - Databases: getting-started/databases.md
+  - Pipeline Modules:
+    - modules/index.md
+    - "Module 1 — QC & Preprocessing": modules/module1-qc.md
+    - "Module 2 — Functional Profiling": modules/module2-functional.md
+    - "Module 3 — Drug–Microbiome Interaction": modules/module3-interaction.md
+    - "Module 4 — PK Impact Modelling": modules/module4-pk-impact.md
+    - "Module 5 — Cohort Reporting": modules/module5-reporting.md
+  - Parameters: parameters.md
+  - Output Files: outputs.md
+  - Mathematical Methods: methods.md
+  - Docker Images: docker.md
+  - FAQ: faq.md
+
+exclude_docs: |
+  README.md
+  output.md
+  usage.md
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.arithmatex:
+      generic: true
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - def_list
+  - toc:
+      permalink: true
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/sanyabadole/RxBiome
+  version:
+    provider: mike
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_KEY

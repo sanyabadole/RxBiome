@@ -1,0 +1,13 @@
+drug_name,drugbank_id,drug_class,smiles
+digoxin,DB00390,Cardiac glycoside,
+levodopa,DB01235,Antiparkinsonian,
+irinotecan,DB00762,Antineoplastic,
+sulfasalazine,DB00795,Anti-inflammatory,
+metformin,DB00331,Biguanide,CN(C)C(=N)NC(=N)N
+simvastatin,DB00641,Statin,
+atorvastatin,DB01076,Statin,
+warfarin,DB00682,Anticoagulant,
+clopidogrel,DB00758,Antiplatelet,
+omeprazole,DB00338,Proton pump inhibitor,
+acetaminophen,DB00316,Analgesic,
+tacrolimus,DB00864,Immunosuppressant,
