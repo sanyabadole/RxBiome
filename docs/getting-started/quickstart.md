@@ -2,6 +2,29 @@
 
 This page walks through a real end-to-end run with two paired-end gut metagenome samples (SRR413665, SRR413666) and a 12-drug cardiometabolic panel.
 
+## Automated Setup (Recommended)
+
+The fastest way to get started is the bundled setup script. It checks prerequisites, downloads sample data, and downloads all required databases automatically:
+
+```bash
+bash quick_setup.sh
+```
+
+Options:
+
+| Flag | Effect |
+|------|--------|
+| `--skip-databases` | Skip database downloads (use your own paths) |
+| `--skip-samples` | Skip FASTQ download (use your own data) |
+| `--help` | Show usage |
+
+!!! tip
+    Run `bash quick_setup.sh --skip-databases` if you already have Kraken2 / MetaPhlAn / KneadData databases on disk.
+
+---
+
+## Manual Step-by-Step
+
 ## Step 1 — Place Your Raw Data and Create a Samplesheet
 
 Copy your FASTQ files into a `raw_data/` folder inside the pipeline directory, then create the samplesheet using relative paths:

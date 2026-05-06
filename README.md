@@ -38,10 +38,13 @@ Raw FASTQ → QC & Preprocessing → Functional Profiling (optional)
 git clone https://github.com/sanyabadole/RxBiome.git
 cd RxBiome
 
-# 2. Run with test data
+# 2. Run automated setup (checks tools, downloads databases + sample data)
+bash quick_setup.sh
+
+# 3. Run with test data (no databases needed)
 nextflow run main.nf -profile test,docker --outdir results_test
 
-# 3. Run with your data
+# 4. Run with real data
 nextflow run main.nf \
   -profile local,docker \
   --input samplesheet.csv \
@@ -50,6 +53,37 @@ nextflow run main.nf \
   --metaphlan4_db databases/metaphlan \
   --metaphlan4_index mpa_vJan25_CHOCOPhlAnSGB_202503 \
   --outdir results/
+```
+
+### Download Sample Data Manually
+
+If you prefer to download the example SRA samples yourself:
+
+```bash
+mkdir -p raw_data
+# Download SRR413665 and SRR413666 from ENA (paired-end gut metagenomes)
+wget -P raw_data https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR413/SRR413665/SRR413665_1.fastq.gz
+wget -P raw_data https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR413/SRR413665/SRR413665_2.fastq.gz
+wget -P raw_data https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR413/SRR413666/SRR413666_1.fastq.gz
+wget -P raw_data https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR413/SRR413666/SRR413666_2.fastq.gz
+```
+
+### Download Databases Manually
+
+```bash
+# Kraken2 Standard 8 GB index
+mkdir -p databases/kraken2
+wget -P databases/kraken2 https://genome-idx.s3.amazonaws.com/kraken/k2_standard_08gb_20240112.tar.gz
+tar -xzf databases/kraken2/k2_standard_08gb_20240112.tar.gz -C databases/kraken2
+rm databases/kraken2/k2_standard_08gb_20240112.tar.gz
+
+# MetaPhlAn 4 database
+mkdir -p databases/metaphlan
+metaphlan --install --index mpa_vJan25_CHOCOPhlAnSGB_202503 --bowtie2db databases/metaphlan
+
+# KneadData human host database (required for host decontamination)
+mkdir -p databases/kneaddata_human
+kneaddata_database --download human_genome bowtie2 databases/kneaddata_human
 ```
 
 ## Requirements
